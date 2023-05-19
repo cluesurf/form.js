@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "target": "ESNext",
+    "lib": ["es2020"],
+    "outDir": "host",
+    "rootDir": "make",
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "strictNullChecks": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "noUncheckedIndexedAccess": true,
+    "baseUrl": "./make",
+    "noErrorTruncation": true,
+    "types": ["node"],
+    "typeRoots": ["node_modules/@types"],
+    "noImplicitAny": true
+  },
+  "include": ["*.ts", "**/*.ts"],
+  "exclude": ["node_modules"]
+}
