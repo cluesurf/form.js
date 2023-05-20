@@ -1,6 +1,35 @@
 /* eslint-disable sort-exports/sort-exports */
 import { z } from 'zod'
 
+export type OmitIndexSignature<ObjectType> = {
+  [KeyType in keyof ObjectType as {} extends Record<KeyType, unknown>
+    ? never
+    : KeyType]: ObjectType[KeyType]
+}
+
+export type Base = {
+  [key: string]: BaseForm
+}
+
+export type BaseFormName = keyof OmitIndexSignature<Base>
+
+export type BaseForm = {
+  [key: string]: BaseFormLink
+}
+
+export type BaseFormLink = {
+  base?: unknown
+  base_size?: number
+  code?: true
+  find?: boolean
+  form: Array<string> | string
+  head_size?: number
+  list?: boolean
+  name?: string
+  take?: Array<unknown>
+  void?: true
+}
+
 export const LOAD_FIND_TEST = [
   'bond',
   'base_link_mark',
@@ -161,3 +190,42 @@ export const LoadSort: z.ZodType<LoadSort> = z.object({
   name: z.string(),
   tilt: z.enum(['+', '-']),
 })
+
+assertZodObject(LoadReadLink)
+
+// for (const name in LoadReadLink.shape) {
+//   const def = LoadReadLink.shape[name] as z.ZodType
+//   if (def instanceof z.ZodString) {
+//     const min = def._def.checks.find(ch => ch.kind === 'min')
+//     const max = def._def.checks.find(ch => ch.kind === 'max')
+//   } else if (def instanceof z.ZodEnum) {
+//     const map = def.enum
+//   } else if (def instanceof z.ZodObject) {
+//     console.log(def)
+//   } else if (def instanceof z.ZodOptional) {
+//     console.log(def.unwrap())
+//   }
+// }
+
+export function assertZodObject<S extends z.ZodObject<z.ZodRawShape>>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  x: any,
+): asserts x is S {
+  if (!(x instanceof z.ZodObject)) {
+    throw new Error()
+  }
+}
+
+export function assertType<S extends z.ZodType>(
+  x: unknown,
+  schema: S,
+): asserts x is S extends z.ZodType<infer T> ? T : never {
+  schema.parse(x)
+}
+
+export function isType<S extends z.ZodType>(
+  x: unknown,
+  schema: S,
+): x is S extends z.ZodType<infer T> ? T : never {
+  return schema.safeParse(x).success
+}
