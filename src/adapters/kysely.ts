@@ -14,14 +14,6 @@ import {
   LoadSave,
   LoadSort,
 } from '../types'
-import {
-  TEXT,
-  test_hash,
-  test_list,
-  test_load,
-  test_text,
-  test_tree,
-} from './test'
 
 export type Base = typeof FORM
 

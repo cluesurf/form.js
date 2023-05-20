@@ -3,6 +3,10 @@
   "type": "module",
   "version": "0.0.1",
   "license": "MIT",
+  "files": [
+    "./host/index.js",
+    "./host/index.d.ts"
+  ],
   "scripts": {
     "build": "tsc && tsc-alias",
     "watch": "concurrently --kill-others \"tsc -w\" \"tsc-alias -w\"",
@@ -38,6 +42,7 @@
     "kysely": "^0.24.2"
   },
   "dependencies": {
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "zod": "^3.21.4"
   }
 }
