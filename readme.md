@@ -213,3 +213,28 @@ export default make
 ## Queries
 
 Then you can make your actual queries (loads).
+
+```ts
+export const findUserById = () => ({
+  read: {
+    user: {
+      find: {
+        form: 'like',
+        base: 'name',
+        test: 'bond',
+        head: 'dawn',
+      },
+      read: {
+        id: true,
+        name: true,
+        email: true,
+        posts: {
+          read: {
+            size: true,
+          },
+        },
+      },
+    },
+  },
+})
+```
