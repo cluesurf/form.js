@@ -1,4 +1,5 @@
-import make, { BaseForm } from './index.js'
+import type { BaseForm } from './index.js'
+import make from './make.js'
 
 const User: BaseForm = {
   dock: 'id',
