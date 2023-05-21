@@ -84,6 +84,7 @@ function makeFace(base: Base) {
     list.push(`${name}: Form.${pascal(name)}`)
   }
   list.push(`}`)
+  list.push(`export type Name = keyof Base`)
   list.push(`}`)
 
   const text = prettier.format(list.join('\n'), {
@@ -157,6 +158,7 @@ function makeBack(base: Base) {
     list.push(`${name}: Form.${pascal(name)}`)
   }
   list.push(`}`)
+  list.push(`export type Name = keyof Base`)
   list.push(`}`)
 
   const text = prettier.format(list.join('\n'), {
