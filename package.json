@@ -12,7 +12,8 @@
     "watch": "concurrently --kill-others \"tsc -w\" \"tsc-alias -w\"",
     "lint": "eslint --ext .ts ./make",
     "lint:fix": "npm run lint -- --fix",
-    "test": "npx ts-node-esm -P tsconfig.json test.ts"
+    "test:make": "npx ts-node-esm -P tsconfig.json test/make.ts",
+    "test": "npx ts-node-esm -P tsconfig.json test/load.ts"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.0.0",

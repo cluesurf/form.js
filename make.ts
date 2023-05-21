@@ -50,7 +50,6 @@ const ESLINT = {
     '@typescript-eslint',
     'import',
     'simple-import-sort',
-    'sort-exports',
     'typescript-sort-keys',
     'sort-keys',
     'prettier',
@@ -71,7 +70,7 @@ const ESLINT = {
     '@typescript-eslint/no-array-constructor': 'error',
     '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/no-for-in-array': 'error',
-    '@typescript-eslint/no-namespace': 'error',
+    '@typescript-eslint/no-namespace': 'off',
     '@typescript-eslint/no-non-null-assertion': 'error',
     '@typescript-eslint/no-require-imports': 'error',
     '@typescript-eslint/no-this-alias': 'error',
@@ -118,7 +117,6 @@ const ESLINT = {
     'object-curly-spacing': 'off',
     'padding-line-between-statements': 'off',
     'prettier/prettier': 2,
-    'sort-exports/sort-exports': ['error', { sortDir: 'asc' }],
     'sort-keys': 0,
     'sort-keys/sort-keys-fix': 2,
     'space-before-blocks': 'off',
@@ -153,7 +151,7 @@ async function makeFaceTest(base: Base) {
 
   for (const name in base) {
     list.push(
-      `export const ${pascal(name)}Test: z.ZodType<Face.${pascal(
+      `export const ${pascal(name)}Test: z.ZodType<Face.Form.${pascal(
         name,
       )}> = z.object({`,
     )
@@ -174,6 +172,10 @@ async function makeFaceTest(base: Base) {
         bond.push(`z.optional(`)
       }
 
+      if (link.list) {
+        bond.push(`z.array(`)
+      }
+
       if (Array.isArray(link.form)) {
         bond.push(`z.union(`)
         link.form.forEach(form => {
@@ -182,6 +184,10 @@ async function makeFaceTest(base: Base) {
         bond.push(`)`)
       } else {
         bond.push(makeFormZodText(link.form))
+      }
+
+      if (link.list) {
+        bond.push(`)`)
       }
 
       if (link.void) {
@@ -209,7 +215,7 @@ async function makeBackTest(base: Base) {
 
   for (const name in base) {
     list.push(
-      `export const ${pascal(name)}Test: z.ZodType<Back.${pascal(
+      `export const ${pascal(name)}Test: z.ZodType<Back.Form.${pascal(
         name,
       )}> = z.object({`,
     )
@@ -230,7 +236,11 @@ async function makeBackTest(base: Base) {
         bond.push(`z.optional(`)
       }
 
-      if (Array.isArray(link.form)) {
+      const makeLinkName = link.link ? link.link.name : linkName
+
+      if (link.link) {
+        bond.push(makeFormZodText(link.link.form))
+      } else if (Array.isArray(link.form)) {
         bond.push(`z.union(`)
         link.form.forEach(form => {
           bond.push(makeFormZodText(form) + ',')
@@ -244,7 +254,7 @@ async function makeBackTest(base: Base) {
         bond.push(`)`)
       }
 
-      list.push(`${linkName}: ${bond.join('\n')},`)
+      list.push(`${makeLinkName}: ${bond.join('\n')},`)
     }
 
     list.push(`})`)
@@ -260,38 +270,36 @@ async function makeBackTest(base: Base) {
 function makeZodFoot(base: Base, form: string) {
   const list: Array<string> = []
 
-  list.push(
-    `export const Test: Record<${form}.Name, z.ZodType<any>> = {`,
-  )
+  list.push(`export const Test: Record<${form}.Name, z.ZodTypeAny> = {`)
   for (const name in base) {
     list.push(`${name}: ${pascal(name)}Test,`)
   }
   list.push(`}`)
 
   list.push(
-    `export function need<Name extends ${form}.Name>(bond: unknown, form: Name): asserts bond is ${form}.Form[Name] {`,
+    `export function need<Name extends ${form}.Name>(bond: unknown, form: Name): asserts bond is ${form}.Base[Name] {`,
   )
 
-  list.push(`const test = Test[name]`)
+  list.push(`const test = Test[form]`)
   list.push(`test.parse(bond)`)
 
   list.push(`}`)
 
   list.push(
-    `export function test<Name extends ${form}.Name>(bond: unknown, form: Name): bond is ${form}.Form[Name] {`,
+    `export function test<Name extends ${form}.Name>(bond: unknown, form: Name): bond is ${form}.Base[Name] {`,
   )
 
-  list.push(`const test = Test[name]`)
+  list.push(`const test = Test[form]`)
   list.push(`return test.safeParse(bond).success`)
 
   list.push(`}`)
 
   list.push(
-    `export function take<Name extends ${form}.Name>(bond: unknown, form: Name): ${form}.Form[Name] {`,
+    `export function take<Name extends ${form}.Name>(bond: unknown, form: Name): ${form}.Base[Name] {`,
   )
 
-  list.push(`const test = Test[name]`)
-  list.push(`return test.parse(bond) as ${form}.Form[Name]`)
+  list.push(`const test = Test[form] as z.ZodType<${form}.Base[Name]>`)
+  list.push(`return test.parse(bond)`)
 
   list.push(`}`)
 
@@ -363,6 +371,7 @@ function makeFormText(form: string) {
     case 'string':
     case 'uuid':
     case 'cuid':
+    case 'date':
       return 'string'
     case 'mark':
       return 'number'
@@ -418,7 +427,7 @@ async function makeBackForm(base: Base) {
         continue
       }
 
-      const make_linkName = link.link ? link.link.name : linkName
+      const makeLinkName = link.link ? link.link.name : linkName
 
       const formText = link.link
         ? makeFormText(link.link.form)
@@ -427,9 +436,9 @@ async function makeBackForm(base: Base) {
         : makeFormText(link.form)
 
       if (link.void) {
-        list.push(`${make_linkName}?: ${formText} | null | undefined`)
+        list.push(`${makeLinkName}?: ${formText} | null | undefined`)
       } else {
-        list.push(`${make_linkName}: ${formText}`)
+        list.push(`${makeLinkName}: ${formText}`)
       }
     }
     list.push(`}`)

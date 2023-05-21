@@ -1,5 +1,7 @@
-import type { BaseForm } from './index.js'
-import make from './make.js'
+import fs from 'fs'
+
+import type { BaseForm } from '../index.js'
+import make from '../make.js'
 
 const User: BaseForm = {
   dock: 'id',
@@ -31,8 +33,8 @@ start()
 
 async function start() {
   const { face, back } = await make(Base)
-  console.log(back.form)
-  console.log(back.test)
-  console.log(face.form)
-  console.log(face.test)
+  fs.writeFileSync('./test/host/back/form.ts', back.form)
+  fs.writeFileSync('./test/host/back/test.ts', back.test)
+  fs.writeFileSync('./test/host/face/form.ts', face.form)
+  fs.writeFileSync('./test/host/face/test.ts', face.test)
 }

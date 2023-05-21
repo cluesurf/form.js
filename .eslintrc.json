@@ -9,7 +9,14 @@
     "project": ["./tsconfig.json"]
   },
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint", "import", "simple-import-sort", "sort-exports", "typescript-sort-keys", "sort-keys", "prettier"],
+  "plugins": [
+    "@typescript-eslint",
+    "import",
+    "simple-import-sort",
+    "typescript-sort-keys",
+    "sort-keys",
+    "prettier"
+  ],
   "extends": ["prettier"],
   "rules": {
     "curly": 2,
@@ -35,7 +42,7 @@
     "@typescript-eslint/naming-convention": 0,
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/no-for-in-array": "error",
-    "@typescript-eslint/no-namespace": "error",
+    "@typescript-eslint/no-namespace": "off",
     "@typescript-eslint/no-non-null-assertion": "error",
     "@typescript-eslint/no-require-imports": "error",
     "@typescript-eslint/no-this-alias": "error",
@@ -64,11 +71,13 @@
     ],
     "space-before-blocks": "off",
     "@typescript-eslint/space-before-blocks": ["error", "always"],
-    "@typescript-eslint/type-annotation-spacing": ["error", { "after": true }],
+    "@typescript-eslint/type-annotation-spacing": [
+      "error",
+      { "after": true }
+    ],
     "import/first": "error",
     "import/newline-after-import": "error",
     "import/no-duplicates": "error",
-    "sort-exports/sort-exports": ["error", { "sortDir": "asc" }],
     "typescript-sort-keys/interface": "error",
     "typescript-sort-keys/string-enum": "error",
     "sort-keys": 0,
