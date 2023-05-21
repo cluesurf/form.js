@@ -19,16 +19,16 @@ if (btest(b_user, 'user')) {
 
 const f_user = JSON.parse(
   JSON.stringify({
-    email: 'foo@bar.com',
+    email: 'baz@bar.com',
     id: '123',
     name: 'foo',
     posts: [
-      {
-        content: 'some content',
-        createdAt: new Date().toISOString(),
-        id: 'x',
-        title: 'A post',
-      },
+      // {
+      //   content: 'some content',
+      //   createdAt: new Date().toISOString(),
+      //   id: 'x',
+      //   title: 'A post',
+      // },
     ],
   }),
 ) as object
