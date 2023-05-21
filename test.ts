@@ -27,6 +27,11 @@ const Base = {
   user: User,
 }
 
-const { face, back } = make(Base)
-console.log(back)
-console.log(face)
+start()
+
+async function start() {
+  const { face, back } = await make(Base)
+  console.log(back)
+  console.log(face.form)
+  console.log(face.test)
+}
