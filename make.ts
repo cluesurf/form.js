@@ -229,6 +229,9 @@ async function makeBackTest(base: Base) {
       if (!link) {
         continue
       }
+      if (link.list) {
+        continue
+      }
 
       const bond: Array<string> = []
 
@@ -290,7 +293,11 @@ function makeZodFoot(base: Base, form: string) {
   )
 
   list.push(`const test = Test[form]`)
-  list.push(`return test.safeParse(bond).success`)
+  list.push(`const make = test.safeParse(bond)`)
+  list.push(`if ('error' in make) {`)
+  list.push(`console.log(make.error)`)
+  list.push(`}`)
+  list.push(`return make.success`)
 
   list.push(`}`)
 

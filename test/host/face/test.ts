@@ -31,7 +31,11 @@ export function test<Name extends Face.Name>(
   form: Name,
 ): bond is Face.Base[Name] {
   const test = Test[form]
-  return test.safeParse(bond).success
+  const make = test.safeParse(bond)
+  if ('error' in make) {
+    console.log(make.error)
+  }
+  return make.success
 }
 export function take<Name extends Face.Name>(
   bond: unknown,
