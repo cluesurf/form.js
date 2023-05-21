@@ -31,7 +31,8 @@ start()
 
 async function start() {
   const { face, back } = await make(Base)
-  console.log(back)
+  console.log(back.form)
+  console.log(back.test)
   console.log(face.form)
   console.log(face.test)
 }

@@ -1,8 +1,14 @@
 import _ from 'lodash'
+import path from 'path'
 import prettier from 'prettier'
 import format from 'prettier-eslint'
+import { fileURLToPath } from 'url'
 
 import { Base } from './index.js'
+
+const __filename = fileURLToPath(import.meta.url)
+
+const __dirname = path.dirname(__filename)
 
 const PRETTIER = {
   arrowParens: 'avoid' as const,
@@ -123,7 +129,7 @@ const ESLINT = {
 
 export default async function make(base: Base) {
   const face = await makeFace(base)
-  const back = await makeBackForm(base)
+  const back = await makeBack(base)
   return { back, face }
 }
 
@@ -133,13 +139,24 @@ async function makeFace(base: Base) {
   return { form, test }
 }
 
+async function makeBack(base: Base) {
+  const form = await makeBackForm(base)
+  const test = await makeBackTest(base)
+  return { form, test }
+}
+
 async function makeFaceTest(base: Base) {
   const list: Array<string> = []
 
   list.push(`import { z } from 'zod'`)
+  list.push(`import { Face } from './form.js'`)
 
   for (const name in base) {
-    list.push(`const ${pascal(name)}Test = z.object({`)
+    list.push(
+      `export const ${pascal(name)}Test: z.ZodType<Face.${pascal(
+        name,
+      )}> = z.object({`,
+    )
     const form = base[name]
     if (!form) {
       continue
@@ -153,6 +170,10 @@ async function makeFaceTest(base: Base) {
 
       const bond: Array<string> = []
 
+      if (link.void) {
+        bond.push(`z.optional(`)
+      }
+
       if (Array.isArray(link.form)) {
         bond.push(`z.union(`)
         link.form.forEach(form => {
@@ -163,15 +184,118 @@ async function makeFaceTest(base: Base) {
         bond.push(makeFormZodText(link.form))
       }
 
+      if (link.void) {
+        bond.push(`)`)
+      }
+
       list.push(`${linkName}: ${bond.join('\n')},`)
     }
 
     list.push(`})`)
   }
 
+  list.push(...makeZodFoot(base, `Face`))
+
   const text = await makeText(list.join('\n'))
 
   return text
+}
+
+async function makeBackTest(base: Base) {
+  const list: Array<string> = []
+
+  list.push(`import { z } from 'zod'`)
+  list.push(`import { Back } from './form.js'`)
+
+  for (const name in base) {
+    list.push(
+      `export const ${pascal(name)}Test: z.ZodType<Back.${pascal(
+        name,
+      )}> = z.object({`,
+    )
+    const form = base[name]
+    if (!form) {
+      continue
+    }
+
+    for (const linkName in form.link) {
+      const link = form.link[linkName]
+      if (!link) {
+        continue
+      }
+
+      const bond: Array<string> = []
+
+      if (link.void) {
+        bond.push(`z.optional(`)
+      }
+
+      if (Array.isArray(link.form)) {
+        bond.push(`z.union(`)
+        link.form.forEach(form => {
+          bond.push(makeFormZodText(form) + ',')
+        })
+        bond.push(`)`)
+      } else {
+        bond.push(makeFormZodText(link.form))
+      }
+
+      if (link.void) {
+        bond.push(`)`)
+      }
+
+      list.push(`${linkName}: ${bond.join('\n')},`)
+    }
+
+    list.push(`})`)
+  }
+
+  list.push(...makeZodFoot(base, `Back`))
+
+  const text = await makeText(list.join('\n'))
+
+  return text
+}
+
+function makeZodFoot(base: Base, form: string) {
+  const list: Array<string> = []
+
+  list.push(
+    `export const Test: Record<${form}.Name, z.ZodType<any>> = {`,
+  )
+  for (const name in base) {
+    list.push(`${name}: ${pascal(name)}Test,`)
+  }
+  list.push(`}`)
+
+  list.push(
+    `export function need<Name extends ${form}.Name>(bond: unknown, form: Name): asserts bond is ${form}.Form[Name] {`,
+  )
+
+  list.push(`const test = Test[name]`)
+  list.push(`test.parse(bond)`)
+
+  list.push(`}`)
+
+  list.push(
+    `export function test<Name extends ${form}.Name>(bond: unknown, form: Name): bond is ${form}.Form[Name] {`,
+  )
+
+  list.push(`const test = Test[name]`)
+  list.push(`return test.safeParse(bond).success`)
+
+  list.push(`}`)
+
+  list.push(
+    `export function take<Name extends ${form}.Name>(bond: unknown, form: Name): ${form}.Form[Name] {`,
+  )
+
+  list.push(`const test = Test[name]`)
+  list.push(`return test.parse(bond) as ${form}.Form[Name]`)
+
+  list.push(`}`)
+
+  return list
 }
 
 async function makeFaceForm(base: Base) {
@@ -329,15 +453,15 @@ function pascal(text: string) {
 }
 
 async function makeText(text: string) {
-  const config = {
-    eslintConfig: ESLINT,
-    prettierOptions: PRETTIER,
-    text: text,
-  }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return (await format(config)) as string
-  // return prettier.format(text, {
-  //   ...PRETTIER,
-  //   parser: 'typescript',
-  // })
+  // const config = {
+  //   eslintConfig: ESLINT,
+  //   prettierOptions: PRETTIER,
+  //   text: text,
+  // }
+  // // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  // return (await format(config)) as string
+  return prettier.format(text, {
+    ...PRETTIER,
+    parser: 'typescript',
+  })
 }
