@@ -12,18 +12,24 @@ codegen to generate the TypeScript definitions for frontend and backend.
 ```ts
 // base/form.ts
 const User = {
-  id: { form: 'uuid', dock: true },
-  name: { form: 'text' },
-  email: { form: 'text', void: true },
-  posts: { form: 'post', list: true, back: 'author' },
+  dock: 'id',
+  link: {
+    id: { form: 'uuid' },
+    name: { form: 'text' },
+    email: { form: 'text', void: true },
+    posts: { form: 'post', list: true, back: 'author' },
+  },
 }
 
 const Post = {
-  id: { form: 'uuid', dock: true },
-  title: { form: 'text', baseSize: 3 },
-  author: { form: 'user', link: true },
-  content: { form: 'text' },
-  createdAt: { form: 'date' },
+  dock: 'id',
+  link: {
+    id: { form: 'uuid' },
+    title: { form: 'text', baseSize: 3 },
+    author: { form: 'user', link: true },
+    content: { form: 'text' },
+    createdAt: { form: 'date' },
+  },
 }
 
 const Base = {
@@ -36,19 +42,8 @@ export default Base
 
 ### Codegen
 
-```ts
-// /host/back/base.ts
-const base = {
-  user: {
-    dock: 'id',
-    link: {
-      id: { form: 'uuid' },
-    },
-  },
-}
-
-export default base
-```
+In addition to the TypeScript generated code below, it generates zod
+files so it can verify unknown input.
 
 ```ts
 // /host/back.ts
