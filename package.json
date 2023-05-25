@@ -1,15 +1,17 @@
 {
-  "name": "@lancejpollard/jql.js",
+  "name": "@tunebond/form",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "license": "MIT",
   "files": [
     "./host/index.js",
-    "./host/index.d.ts"
+    "./host/index.d.ts",
+    "./host/tool.js",
+    "./host/tool.d.ts"
   ],
   "scripts": {
-    "build": "tsc && tsc-alias",
-    "watch": "concurrently --kill-others \"tsc -w\" \"tsc-alias -w\"",
+    "make": "tsc && tsc-alias",
+    "scan": "concurrently --kill-others \"tsc -w\" \"tsc-alias -w\"",
     "lint": "eslint --ext .ts ./make",
     "lint:fix": "npm run lint -- --fix",
     "test:make": "npx ts-node-esm -P tsconfig.json test/make.ts",

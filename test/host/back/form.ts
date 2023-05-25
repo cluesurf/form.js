@@ -7,15 +7,18 @@ export namespace Back {
       id: string
       title: string
     }
+
     export type User = {
       email?: string | null | undefined
       id: string
       name: string
     }
   }
+
   export type Base = {
     post: Form.Post
     user: Form.User
   }
+
   export type Name = keyof Base
 }

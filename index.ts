@@ -1,11 +1,12 @@
-export type Base = Record<string, BaseForm>
+export type Base = Record<string, Form>
 
-export type BaseForm = {
-  dock?: string
-  link: Record<string, BaseFormLink>
+export type Form = {
+  dock: string
+  link: Record<string, FormLink>
+  name?: string
 }
 
-export type BaseFormLink = {
+export type FormLink = {
   back?: string
   base?: unknown
   baseSize?: number

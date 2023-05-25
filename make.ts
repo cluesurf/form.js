@@ -1,129 +1,7 @@
 import _ from 'lodash'
-import path from 'path'
-import prettier from 'prettier'
-import format from 'prettier-eslint'
-import { fileURLToPath } from 'url'
 
 import { Base } from './index.js'
-
-const __filename = fileURLToPath(import.meta.url)
-
-const __dirname = path.dirname(__filename)
-
-const PRETTIER = {
-  arrowParens: 'avoid' as const,
-  bracketSpacing: true,
-  endOfLine: 'lf' as const,
-  importOrder: [
-    '^\\w(.*)$',
-    '^@(.*)$',
-    '~(.*)$',
-    '\\..(.*)$',
-    '\\.(.*)$',
-  ],
-  importOrderSeparation: true,
-  importOrderSortSpecifiers: true,
-  printWidth: 72,
-  proseWrap: 'always' as const,
-  quoteProps: 'as-needed' as const,
-  semi: false,
-  singleAttributePerLine: true,
-  singleQuote: true,
-  tabWidth: 2,
-  trailingComma: 'all' as const,
-  useTabs: false,
-}
-
-const ESLINT = {
-  env: {
-    browser: true,
-    es2021: true,
-  },
-  extends: ['prettier'],
-  parser: '@typescript-eslint/parser',
-  parserOptions: {
-    ecmaVersion: 'latest' as const,
-    project: [`${__dirname}/tsconfig.json`],
-    sourceType: 'module' as const,
-  },
-  plugins: [
-    '@typescript-eslint',
-    'import',
-    'simple-import-sort',
-    'typescript-sort-keys',
-    'sort-keys',
-    'prettier',
-  ],
-  rules: {
-    '@typescript-eslint/array-type': [
-      2,
-      {
-        default: 'generic',
-      },
-    ],
-    '@typescript-eslint/await-thenable': 'error',
-    '@typescript-eslint/consistent-type-definitions': [2, 'type'],
-    '@typescript-eslint/consistent-type-exports': 'error',
-    '@typescript-eslint/lines-between-class-members': 'error',
-    '@typescript-eslint/method-signature-style': 'error',
-    '@typescript-eslint/naming-convention': 0,
-    '@typescript-eslint/no-array-constructor': 'error',
-    '@typescript-eslint/no-explicit-any': 'error',
-    '@typescript-eslint/no-for-in-array': 'error',
-    '@typescript-eslint/no-namespace': 'off',
-    '@typescript-eslint/no-non-null-assertion': 'error',
-    '@typescript-eslint/no-require-imports': 'error',
-    '@typescript-eslint/no-this-alias': 'error',
-    '@typescript-eslint/no-throw-literal': 'error',
-    '@typescript-eslint/no-unnecessary-condition': 0,
-    '@typescript-eslint/no-unsafe-argument': 'error',
-    '@typescript-eslint/no-unsafe-assignment': 'error',
-    '@typescript-eslint/no-unsafe-member-access': 'error',
-    '@typescript-eslint/no-unsafe-return': 'error',
-    '@typescript-eslint/no-unused-vars': 'off',
-    '@typescript-eslint/no-useless-empty-export': 'error',
-    '@typescript-eslint/object-curly-spacing': [2, 'always'],
-    '@typescript-eslint/padding-line-between-statements': [
-      'error',
-      {
-        blankLine: 'always',
-        next: ['type'],
-        prev: '*',
-      },
-    ],
-    '@typescript-eslint/prefer-function-type': 'error',
-    '@typescript-eslint/quotes': [
-      'error',
-      'single',
-      {
-        allowTemplateLiterals: true,
-        avoidEscape: true,
-      },
-    ],
-    '@typescript-eslint/space-before-blocks': ['error', 'always'],
-    '@typescript-eslint/type-annotation-spacing': [
-      'error',
-      { after: true },
-    ],
-    curly: 2,
-    'default-case': 'error',
-    'default-case-last': 'error',
-    'import/first': 'error',
-    'import/newline-after-import': 'error',
-    'import/no-duplicates': 'error',
-    'lines-between-class-members': 'off',
-    'no-array-constructor': 'off',
-    'no-throw-literal': 'off',
-    'object-curly-spacing': 'off',
-    'padding-line-between-statements': 'off',
-    'prettier/prettier': 2,
-    'sort-keys': 0,
-    'sort-keys/sort-keys-fix': 2,
-    'space-before-blocks': 'off',
-    'typescript-sort-keys/interface': 'error',
-    'typescript-sort-keys/string-enum': 'error',
-  },
-}
+import { makeText } from './tool'
 
 export default async function make(base: Base) {
   const face = await makeFace(base)
@@ -198,6 +76,7 @@ async function makeFaceTest(base: Base) {
     }
 
     list.push(`})`)
+    list.push(``)
   }
 
   list.push(...makeZodFoot(base, `Face`))
@@ -261,6 +140,7 @@ async function makeBackTest(base: Base) {
     }
 
     list.push(`})`)
+    list.push(``)
   }
 
   list.push(...makeZodFoot(base, `Back`))
@@ -309,6 +189,7 @@ function makeZodFoot(base: Base, form: string) {
   list.push(`return test.parse(bond)`)
 
   list.push(`}`)
+  list.push(``)
 
   return list
 }
@@ -357,15 +238,20 @@ async function makeFaceForm(base: Base) {
       }
     }
     list.push(`}`)
+    list.push(``)
   }
   list.push(`}`)
+  list.push(``)
   list.push(`export type Base = {`)
   for (const name in base) {
     list.push(`${name}: Form.${pascal(name)}`)
   }
   list.push(`}`)
+  list.push(``)
   list.push(`export type Name = keyof Base`)
+  list.push(``)
   list.push(`}`)
+  list.push(``)
 
   const text = await makeText(list.join('\n'))
 
@@ -449,15 +335,20 @@ async function makeBackForm(base: Base) {
       }
     }
     list.push(`}`)
+    list.push(``)
   }
   list.push(`}`)
+  list.push(``)
   list.push(`export type Base = {`)
   for (const name in base) {
     list.push(`${name}: Form.${pascal(name)}`)
   }
   list.push(`}`)
+  list.push(``)
   list.push(`export type Name = keyof Base`)
+  list.push(``)
   list.push(`}`)
+  list.push(``)
 
   const text = await makeText(list.join('\n'))
 
@@ -466,18 +357,4 @@ async function makeBackForm(base: Base) {
 
 function pascal(text: string) {
   return _.startCase(_.camelCase(text)).replace(/ /g, '')
-}
-
-async function makeText(text: string) {
-  // const config = {
-  //   eslintConfig: ESLINT,
-  //   prettierOptions: PRETTIER,
-  //   text: text,
-  // }
-  // // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  // return (await format(config)) as string
-  return prettier.format(text, {
-    ...PRETTIER,
-    parser: 'typescript',
-  })
 }

@@ -1,9 +1,9 @@
 import fs from 'fs'
 
-import type { BaseForm } from '../index.js'
+import type { Form } from '../index.js'
 import make from '../make.js'
 
-const User: BaseForm = {
+const User: Form = {
   dock: 'id',
   link: {
     email: { form: 'text', void: true },
@@ -13,7 +13,7 @@ const User: BaseForm = {
   },
 }
 
-const Post: BaseForm = {
+const Post: Form = {
   dock: 'id',
   link: {
     author: { form: 'user', link: { form: 'uuid', name: 'authorId' } },
