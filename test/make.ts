@@ -1,7 +1,7 @@
 import fs from 'fs'
 
 import type { Form } from '../index.js'
-import make from '../make.js'
+import make from '../make/index.js'
 
 const User: Form = {
   dock: 'id',
@@ -16,11 +16,11 @@ const User: Form = {
 const Post: Form = {
   dock: 'id',
   link: {
-    author: { form: 'user', link: { form: 'uuid', name: 'authorId' } },
+    author: { form: 'user', site: { form: 'uuid', name: 'authorId' } },
     content: { form: 'text' },
     createdAt: { form: 'date' },
     id: { form: 'uuid' },
-    title: { baseSize: 3, form: 'text' },
+    title: { form: 'text', size: { base: 3 } },
   },
 }
 
@@ -34,7 +34,7 @@ start()
 async function start() {
   const { face, back } = await make(Base)
   fs.writeFileSync('./test/host/back/form.ts', back.form)
-  fs.writeFileSync('./test/host/back/test.ts', back.test)
+  fs.writeFileSync('./test/host/back/load.ts', back.load)
   fs.writeFileSync('./test/host/face/form.ts', face.form)
-  fs.writeFileSync('./test/host/face/test.ts', face.test)
+  fs.writeFileSync('./test/host/face/load.ts', face.load)
 }

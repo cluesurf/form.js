@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@tunebond/have':
+    specifier: ^0.1.1
+    version: 0.1.1
   '@tunebond/love-code':
     specifier: ^0.1.0
     version: 0.1.0
@@ -518,8 +521,30 @@ packages:
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
     dev: true
 
+  /@tunebond/halt@0.1.3:
+    resolution: {integrity: sha512-QGw5Qn1FDpXXJgs5nZQSPnTQVxNTjq9WZy9Vh4nCFnQzgQSYvKO39o1r8FVJY+9qIXG/DSMnnEmmRYIT3NX18A==}
+    dependencies:
+      ts-custom-error: 3.3.1
+    dev: false
+
+  /@tunebond/have@0.1.1:
+    resolution: {integrity: sha512-QHnfa3oS22wXspMqfHvwg2TFGD9GKGaiKY228XXAtzEb29COWple+Cr7qylRRM26185EgcJg+Dz9zuiuhkLjtg==}
+    dependencies:
+      '@tunebond/halt': 0.1.3
+      '@tunebond/tone-code': 0.1.1
+      '@types/uuid': 9.0.1
+      lodash: 4.17.21
+      uuid: 9.0.0
+    dev: false
+
   /@tunebond/love-code@0.1.0:
     resolution: {integrity: sha512-Jk0i1pY7xf5xveYHidzQn/KATCLVzFLB4G4da3JMENgjdeKhuioS3B8mExk+mYebOPx4AiVn1XB/rz8Ths6s4w==}
+    dependencies:
+      '@lancejpollard/configured-quadratic-residue-prng.js': 1.0.0
+    dev: false
+
+  /@tunebond/tone-code@0.1.1:
+    resolution: {integrity: sha512-UKe06BEwNJcKArRtyc06Bx9OVITj+1fwMARd4mexn6zjk+kjMegmw1F2YvXrFmFyDDgXDODbC+0TPGa6aoeShg==}
     dependencies:
       '@lancejpollard/configured-quadratic-residue-prng.js': 1.0.0
     dev: false
@@ -556,6 +581,10 @@ packages:
   /@types/semver@7.5.0:
     resolution: {integrity: sha512-G8hZ6XJiHnuhQKR7ZmysCeJWE08o8T0AXtk5darsCaTVsYZhhgUrq53jizaR2FvsoeCwJhlmwTjkXBY5Pn/ZHw==}
     dev: true
+
+  /@types/uuid@9.0.1:
+    resolution: {integrity: sha512-rFT3ak0/2trgvp4yYZo5iKFEPsET7vKydKF+VRCxlQ9bpheehyAJH89dAkaLEq/j/RZXJIqcgsmPJKUP1Z28HA==}
+    dev: false
 
   /@typescript-eslint/eslint-plugin@5.46.1(@typescript-eslint/parser@5.46.1)(eslint@8.31.0)(typescript@4.9.4):
     resolution: {integrity: sha512-YpzNv3aayRBwjs4J3oz65eVLXc9xx0PDbIRisHj+dYhvBn02MjYOD96P8YGiWEIFBrojaUjxvkaUpakD82phsA==}
@@ -2808,6 +2837,11 @@ packages:
     hasBin: true
     dev: true
 
+  /ts-custom-error@3.3.1:
+    resolution: {integrity: sha512-5OX1tzOjxWEgsr/YEUWSuPrQ00deKLh6D7OTWcvNHm12/7QPyRh8SYpyWvA4IZv8H/+GQWQEh/kwo95Q9OVW1A==}
+    engines: {node: '>=14.0.0'}
+    dev: false
+
   /ts-node@10.9.1(@types/node@18.11.17)(typescript@4.9.4):
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
     hasBin: true
@@ -2928,6 +2962,11 @@ packages:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
     dependencies:
       punycode: 2.3.0
+
+  /uuid@9.0.0:
+    resolution: {integrity: sha512-MXcSTerfPa4uqyzStbRoTgt5XIe3x5+42+q1sDuy3R5MDk66URdLMOZe5aPX/SQd+kuYAh0FdP/pO28IkQyTeg==}
+    hasBin: true
+    dev: false
 
   /v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
