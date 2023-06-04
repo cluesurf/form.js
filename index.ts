@@ -12,7 +12,7 @@ export type FormMesh = {
   name?: string
 }
 
-export enum Sort {
+export enum FormSort {
   Date = 'date',
   Mark = 'mark',
   Text = 'text',
@@ -22,7 +22,7 @@ export enum Sort {
 
 export type FormCode = {
   // the base primitive type of this form.
-  base: Sort
+  base: FormSort
   // formatters for going between the 3 states
   host?: FormLinkHost
   // validation on size of the value.
@@ -37,7 +37,15 @@ export type FormCode = {
 // get compiled down into so there is no
 // polymorphism or other complexity.
 export type FormTree = {
+  bind?: FormTree
+  bond?: Form
   form?: string
+  hook?: (
+    lead: any,
+    tree: FormTree,
+    leadLine: string,
+    treeLine: string,
+  ) => unknown
   host?: FormLinkHost
   link?: Record<string, FormTree>
   name?: Record<string, FormTree>
