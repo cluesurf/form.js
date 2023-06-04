@@ -1,14 +1,12 @@
 {
   "name": "@tunebond/form",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "main": "./host/index.js",
   "files": [
     "./host/index.js",
-    "./host/index.d.ts",
-    "./host/make.js",
-    "./host/make.d.ts"
+    "./host/index.d.ts"
   ],
   "scripts": {
     "make": "tsc && tsc-alias",
