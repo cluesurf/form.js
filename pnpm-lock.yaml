@@ -1,6 +1,13 @@
-lockfileVersion: '6.0'
+lockfileVersion: '6.1'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
 
 dependencies:
+  '@tunebond/love-code':
+    specifier: ^0.1.0
+    version: 0.1.0
   kysely:
     specifier: ^0.24.2
     version: 0.24.2
@@ -436,6 +443,16 @@ packages:
       '@jridgewell/sourcemap-codec': 1.4.15
     dev: true
 
+  /@lancejpollard/configured-quadratic-residue-prng.js@1.0.0:
+    resolution: {integrity: sha512-TGKhTiD1v3aHCjfYnSkzW5VG4/r75RO8ZkSSIyFrlH0uXh+0s0w5ElUUZ1g9I3TYRceTV+ZdsnWvTAwxq/LppQ==}
+    dependencies:
+      '@lancejpollard/quadratic-residue-prng.js': 1.0.0
+    dev: false
+
+  /@lancejpollard/quadratic-residue-prng.js@1.0.0:
+    resolution: {integrity: sha512-njr7owTIRuTAncZeO5yZWZ2mBuSXZu0wqFqZsJm5gGcUKL+p+lyjOel+dKG3rouB0q//Nw1uYLa8foM89bnehQ==}
+    dev: false
+
   /@nodelib/fs.scandir@2.1.5:
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
     engines: {node: '>= 8'}
@@ -500,6 +517,12 @@ packages:
   /@tsconfig/node16@1.0.4:
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
     dev: true
+
+  /@tunebond/love-code@0.1.0:
+    resolution: {integrity: sha512-Jk0i1pY7xf5xveYHidzQn/KATCLVzFLB4G4da3JMENgjdeKhuioS3B8mExk+mYebOPx4AiVn1XB/rz8Ths6s4w==}
+    dependencies:
+      '@lancejpollard/configured-quadratic-residue-prng.js': 1.0.0
+    dev: false
 
   /@types/eslint@8.40.0:
     resolution: {integrity: sha512-nbq2mvc/tBrK9zQQuItvjJl++GTN5j06DaPtp3hZCpngmG6Q3xoyEmd0TwZI0gAy/G1X0zhGBbr2imsGFdFV0g==}

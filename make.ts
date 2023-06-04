@@ -1,7 +1,7 @@
 import _ from 'lodash'
 
 import { Base } from './index.js'
-import { makeText } from './tool'
+import loveCode from '@tunebond/love-code'
 
 export default async function make(base: Base) {
   const face = await makeFace(base)
@@ -81,7 +81,7 @@ async function makeFaceTest(base: Base) {
 
   list.push(...makeZodFoot(base, `Face`))
 
-  const text = await makeText(list.join('\n'))
+  const text = await loveCode(list.join('\n'))
 
   return text
 }
@@ -145,7 +145,7 @@ async function makeBackTest(base: Base) {
 
   list.push(...makeZodFoot(base, `Back`))
 
-  const text = await makeText(list.join('\n'))
+  const text = await loveCode(list.join('\n'))
 
   return text
 }
@@ -253,7 +253,7 @@ async function makeFaceForm(base: Base) {
   list.push(`}`)
   list.push(``)
 
-  const text = await makeText(list.join('\n'))
+  const text = await loveCode(list.join('\n'))
 
   return text
 }
@@ -350,7 +350,7 @@ async function makeBackForm(base: Base) {
   list.push(`}`)
   list.push(``)
 
-  const text = await makeText(list.join('\n'))
+  const text = await loveCode(list.join('\n'))
 
   return text
 }

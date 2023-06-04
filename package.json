@@ -7,8 +7,8 @@
   "files": [
     "./host/index.js",
     "./host/index.d.ts",
-    "./host/tool.js",
-    "./host/tool.d.ts"
+    "./host/make.js",
+    "./host/make.d.ts"
   ],
   "scripts": {
     "make": "tsc && tsc-alias",
@@ -47,6 +47,7 @@
     "kysely": "^0.24.2"
   },
   "dependencies": {
+    "@tunebond/love-code": "^0.1.0",
     "lodash": "^4.17.21",
     "prettier-eslint": "^15.0.1",
     "zod": "^3.21.4"

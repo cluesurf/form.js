@@ -1,7 +1,5 @@
 import { z } from 'zod'
-
 import { Face } from './form.js'
-
 export const PostTest: z.ZodType<Face.Form.Post> = z.object({
   author: z.lazy(() => UserTest),
   content: z.string(),
@@ -21,7 +19,6 @@ export const Test: Record<Face.Name, z.ZodTypeAny> = {
   post: PostTest,
   user: UserTest,
 }
-
 export function need<Name extends Face.Name>(
   bond: unknown,
   form: Name,
@@ -29,21 +26,17 @@ export function need<Name extends Face.Name>(
   const test = Test[form]
   test.parse(bond)
 }
-
 export function test<Name extends Face.Name>(
   bond: unknown,
   form: Name,
 ): bond is Face.Base[Name] {
   const test = Test[form]
   const make = test.safeParse(bond)
-
   if ('error' in make) {
     console.log(make.error)
   }
-
   return make.success
 }
-
 export function take<Name extends Face.Name>(
   bond: unknown,
   form: Name,
