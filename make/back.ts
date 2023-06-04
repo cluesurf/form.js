@@ -4,8 +4,9 @@ import {
   formCodeCase,
   makeFormText,
   makeFormZodText,
-  makeZodFoot,
+  makeFoot,
   testForm,
+  SLOT,
 } from './base.js'
 
 export default async function make(base: Base) {
@@ -74,36 +75,33 @@ async function makeLoad(base: Base) {
   const list: Array<string> = []
 
   list.push(`import { z } from 'zod'`)
+  list.push(`import { FormLinkHostMoveName } from '@tunebond/form'`)
   list.push(`import { Form, Name, Base } from './form.js'`)
 
+  const linkMesh: Record<string, string> = {}
+  const formMesh: Record<string, Record<string, string>> = {}
+
   for (const name in base) {
-    list.push(
-      `export const ${formCodeCase(
-        name,
-      )}Load: z.ZodType<Form.${formCodeCase(name)}> = z.object({`,
-    )
     const form = base[name]
     if (!form) {
       continue
     }
 
     if (testForm(form)) {
+      // 1. calculate the base link schemas
       for (const linkName in form.link) {
         const link = form.link[linkName]
-        if (!link) {
+        if (!link || link.list) {
           continue
         }
-        if (link.list) {
-          continue
-        }
+
+        const makeLinkName = link.site ? link.site.name : linkName
 
         const bond: Array<string> = []
 
         if (link.void) {
           bond.push(`z.optional(`)
         }
-
-        const makeLinkName = link.site ? link.site.name : linkName
 
         if (link.site) {
           bond.push(makeFormZodText(link.site.form))
@@ -121,15 +119,82 @@ async function makeLoad(base: Base) {
           bond.push(`)`)
         }
 
-        list.push(`${makeLinkName}: ${bond.join('\n')},`)
-      }
-    }
+        const loadName = `${formCodeCase(name)}_${formCodeCase(
+          makeLinkName,
+        )}_Load`
 
-    list.push(`})`)
-    list.push(``)
+        const bondText = bond.join('\n')
+        list.push(`const ${loadName} = ${bondText}`)
+
+        linkMesh[loadName] = bondText
+      }
+
+      // 2. calculate the transform schemas
+      for (const linkName in form.link) {
+        const link = form.link[linkName]
+        if (!link || link.list) {
+          continue
+        }
+
+        const makeLinkName = link.site ? link.site.name : linkName
+
+        SLOT.forEach(slot => {
+          const move = link.host?.back?.[slot]
+          const loadName = `${formCodeCase(name)}_${formCodeCase(
+            makeLinkName,
+          )}_Load`
+          const bondText = linkMesh[loadName]
+          const slotLoadName = `${formCodeCase(name)}_${formCodeCase(
+            makeLinkName,
+          )}_${formCodeCase(slot)}_Load`
+
+          if (move) {
+            list.push(
+              `const ${slotLoadName} = ${bondText}.transform(base.form.${name}.link.${linkName}.host.back.${slot})`,
+            )
+          } else {
+            list.push(`const ${slotLoadName} = ${loadName}`)
+          }
+        })
+      }
+
+      // 3. define the 4 transform types for each
+      SLOT.forEach(slot => {
+        const slotFormName = `${formCodeCase(name)}_${formCodeCase(
+          slot,
+        )}_Load`
+
+        const mesh = (formMesh[name] ??= {})
+        mesh[slot] = slotFormName
+
+        list.push(
+          `export const ${slotFormName}: z.ZodType<Form.${formCodeCase(
+            name,
+          )}> = z.object({`,
+        )
+
+        for (const linkName in form.link) {
+          const link = form.link[linkName]
+          if (!link || link.list) {
+            continue
+          }
+
+          const makeLinkName = link.site ? link.site.name : linkName
+
+          const slotLoadName = `${formCodeCase(name)}_${formCodeCase(
+            makeLinkName,
+          )}_${formCodeCase(slot)}_Load`
+
+          list.push(`${makeLinkName}: ${slotLoadName},`)
+        }
+
+        list.push(`})`)
+        list.push(``)
+      })
+    }
   }
 
-  list.push(...makeZodFoot(base))
+  list.push(...makeFoot(base, formMesh))
 
   const text = await loveCode(list.join('\n'))
 

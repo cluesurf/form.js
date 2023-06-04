@@ -1,7 +1,13 @@
 import _ from 'lodash'
-import loveCode from '@tunebond/love-code'
-import { Base, Form } from '../index.js'
-import { testMesh } from '@tunebond/have'
+import { Base, Form, FormLinkHostMove } from '../index.js'
+import { haveMesh, testMesh } from '@tunebond/have'
+
+export const SLOT: Array<keyof FormLinkHostMove> = [
+  'base',
+  'baseSelf',
+  'headSelf',
+  'head',
+]
 
 export function makeFormText(form: string) {
   switch (form) {
@@ -48,29 +54,40 @@ export function formCodeCase(text: string) {
   return _.startCase(_.camelCase(text)).replace(/ /g, '')
 }
 
-export function makeZodFoot(base: Base) {
+export function makeFoot(
+  base: Base,
+  formMesh: Record<string, Record<string, string>>,
+) {
   const list: Array<string> = []
 
-  list.push(`export const Load: Record<Name, z.ZodTypeAny> = {`)
+  list.push(
+    `export const load: Record<Name, Record<FormLinkHostMoveName, z.ZodTypeAny>> = {`,
+  )
   for (const name in base) {
-    list.push(`${name}: ${formCodeCase(name)}Load,`)
+    list.push(`${name}: {`)
+    for (const slot of SLOT) {
+      const slotMesh = formMesh[name]
+      haveMesh(slotMesh, 'slotMesh')
+      list.push(`${slot}: ${slotMesh[slot]},`)
+    }
+    list.push(`},`)
   }
   list.push(`}`)
 
   list.push(
-    `export function need<Name extends Name>(bond: unknown, form: Name): asserts bond is Base[Name] {`,
+    `export function need<N extends Name>(bond: unknown, form: N, move: FormLinkHostMoveName): asserts bond is Base[N] {`,
   )
 
-  list.push(`const test = Load[form]`)
+  list.push(`const test = load[form][move]`)
   list.push(`test.parse(bond)`)
 
   list.push(`}`)
 
   list.push(
-    `export function test<Name extends Name>(bond: unknown, form: Name): bond is Base[Name] {`,
+    `export function test<N extends Name>(bond: unknown, form: N, move: FormLinkHostMoveName): bond is Base[N] {`,
   )
 
-  list.push(`const test = Load[form]`)
+  list.push(`const test = load[form][move]`)
   list.push(`const make = test.safeParse(bond)`)
   list.push(`if ('error' in make) {`)
   list.push(`console.log(make.error)`)
@@ -80,10 +97,10 @@ export function makeZodFoot(base: Base) {
   list.push(`}`)
 
   list.push(
-    `export function take<Name extends Name>(bond: unknown, form: Name): Base[Name] {`,
+    `export function take<N extends Name>(bond: unknown, form: N, move: FormLinkHostMoveName): Base[N] {`,
   )
 
-  list.push(`const test = Load[form] as z.ZodType<Base[Name]>`)
+  list.push(`const test = load[form][move] as z.ZodType<Base[N]>`)
   list.push(`return test.parse(bond)`)
 
   list.push(`}`)

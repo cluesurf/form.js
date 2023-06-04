@@ -63,6 +63,8 @@ export type FormLinkHostMove = {
   headSelf?: (base: unknown) => any
 }
 
+export type FormLinkHostMoveName = keyof FormLinkHostMove
+
 export type FormLinkHost = {
   // database
   back?: FormLinkHostMove

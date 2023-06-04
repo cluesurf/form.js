@@ -4,7 +4,7 @@ import {
   formCodeCase,
   makeFormText,
   makeFormZodText,
-  makeZodFoot,
+  // makeFoot,
   testForm,
 } from './base.js'
 
@@ -78,7 +78,7 @@ async function makeLoad(base: Base) {
     list.push(``)
   }
 
-  list.push(...makeZodFoot(base))
+  // list.push(...makeFoot(base))
 
   const text = await loveCode(list.join('\n'))
 
