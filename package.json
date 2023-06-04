@@ -16,7 +16,8 @@
     "lint": "eslint --ext .ts ./make",
     "lint:fix": "npm run lint -- --fix",
     "test:make": "npx ts-node-esm -P tsconfig.json test/make.ts",
-    "test": "npx ts-node-esm -P tsconfig.json test/load.ts"
+    "test": "npx ts-node-esm -P tsconfig.json test/load.ts",
+    "host": "pnpm make && npm publish --access=public"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.0.0",
