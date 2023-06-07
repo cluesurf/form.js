@@ -1,22 +1,20 @@
 {
   "name": "@tunebond/form",
   "type": "module",
-  "version": "0.2.3",
+  "version": "0.3.2",
   "license": "MIT",
   "main": "./host/index.js",
   "files": [
     "./host/index.js",
-    "./host/index.d.ts",
-    "./host/make.js",
-    "./host/make.d.ts"
+    "./host/index.d.ts"
   ],
   "scripts": {
     "make": "tsc && tsc-alias",
     "scan": "concurrently --kill-others \"tsc -w\" \"tsc-alias -w\"",
     "lint": "eslint --ext .ts ./make",
     "lint:fix": "npm run lint -- --fix",
-    "test:make": "npx ts-node-esm -P tsconfig.json test/make.ts",
-    "test": "npx ts-node-esm -P tsconfig.json test/load.ts",
+    "test:make": "npx tsx test/make.ts",
+    "test": "npx tsx test/load.ts",
     "host": "pnpm make && npm publish --access=public"
   },
   "devDependencies": {
@@ -40,18 +38,17 @@
     "eslint-plugin-sort-keys": "^2.3.5",
     "eslint-plugin-typescript-sort-keys": "^2.1.0",
     "prettier": "^2.8.1",
+    "prettier-eslint": "^15.0.1",
     "ts-node": "^10.9.1",
     "tsc-alias": "^1.8.2",
+    "tsx": "^3.12.7",
     "typescript": "^4.9.4"
   },
-  "peerDependencies": {
-    "kysely": "^0.24.2"
-  },
   "dependencies": {
+    "@tunebond/halt": "^0.1.6",
     "@tunebond/have": "^0.1.1",
-    "@tunebond/love-code": "^0.1.0",
-    "lodash": "^4.17.21",
-    "prettier-eslint": "^15.0.1",
-    "zod": "^3.21.4"
+    "@tunebond/tone-code": "^0.3.0",
+    "dayjs": "^1.11.8",
+    "lodash": "^4.17.21"
   }
 }

@@ -1,5 +1,25 @@
+import dayjs, { Dayjs } from 'dayjs'
+import {
+  testCode,
+  formCodeHost,
+  formHostCode,
+  testHost,
+} from '@tunebond/tone-code'
+import { HaltMesh } from '@tunebond/halt'
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export type Base = Record<string, Form>
+export type Base = {
+  // dependencies on other bases
+  bind?: Array<Base>
+  // name of the project
+  deck: string
+  // map of the forms
+  form: Record<string, Form>
+  // name of the organization
+  host: string
+  // aliases for form names
+  link?: Record<string, string>
+}
 
 export type Form = FormMesh | FormCode
 
@@ -13,10 +33,13 @@ export type FormMesh = {
 }
 
 export enum FormSort {
+  BaseMark = 'base_mark',
+  // bigint
   Date = 'date',
   Mark = 'mark',
+  // smallint
+  RiseMark = 'rise_mark',
   Text = 'text',
-  Time = 'time',
   Wave = 'wave',
 }
 
@@ -33,28 +56,6 @@ export type FormCode = {
   test?: (bond: unknown) => boolean
 }
 
-// this is the tree structure the types
-// get compiled down into so there is no
-// polymorphism or other complexity.
-export type FormTree = {
-  bind?: FormTree
-  bond?: Form
-  form?: string
-  hook?: (
-    lead: any,
-    tree: FormTree,
-    leadLine: string,
-    treeLine: string,
-  ) => unknown
-  host?: FormLinkHost
-  link?: Record<string, FormTree>
-  name?: Record<string, FormTree>
-  size?: FormLinkSize
-  take?: Array<unknown>
-  test?: (lead: unknown) => boolean
-  void?: boolean
-}
-
 export type FormLinkNest = FormLinkNestRoll | FormLinkNestLike
 
 export type FormLinkNestRoll = {
@@ -67,19 +68,24 @@ export type FormLinkNestLike = {
   nest: Form
 }
 
+export type FormLinkHold = {
+  like: string
+  name: string
+}
+
 export type FormLink = {
   // name of the return property.
   back?: string
   // default value.
   base?: unknown
-  // if the ID is stored on this association.
-  code?: true
   // whether or not this column is searchable.
   find?: boolean
-  // the accepted types, arrays mean it's polymorphic.
-  form?: Array<string> | string
+  // how this is saved in the database
+  hold?: Record<string, FormLinkHold>
   // formatters for going between the 3 states
   host?: FormLinkHost
+  // the accepted types, arrays mean it's polymorphic.
+  like?: Array<string> | string
   // nested properties.
   link?: FormLinkNest
   // whether or not this is a list association/property.
@@ -93,31 +99,44 @@ export type FormLink = {
   // accepted values.
   take?: Array<unknown>
   // test whether it matches a pattern.
-  test?: (bond: unknown) => boolean
+  test?: FormLinkTest | Array<FormLinkTest>
   // whether or not it's nullable.
-  void?: true
+  void?: boolean
 }
 
-export type FormLinkHostMove = {
+export type FormLinkTest = {
+  halt?: (lead: any) => HaltMesh
+  hook: (lead: any) => boolean
+}
+
+export type FormLinkHostHookMake = (base: any) => any
+export type FormLinkHostHookTest = (base: any) => boolean
+
+export type FormLinkHostHookLink = {
+  make?: FormLinkHostHookMake
+  test?: FormLinkHostHookTest
+}
+
+export type FormLinkHostHook = {
   // outgoing below
-  base?: (base: any) => any
+  base?: FormLinkHostHookLink
   // incoming below
-  baseSelf?: (base: any) => any
+  baseSelf?: FormLinkHostHookLink
   // outgoing above
-  head?: (base: any) => any
+  head?: FormLinkHostHookLink
   // incoming above
-  headSelf?: (base: any) => any
+  headSelf?: FormLinkHostHookLink
 }
 
-export type FormLinkHostMoveName = keyof FormLinkHostMove
+export type FormLinkHostHookName = keyof FormLinkHostHook
 
 export type FormLinkHost = {
   // database
-  back?: FormLinkHostMove
+  back?: FormLinkHostHook
   // frontend
-  face?: FormLinkHostMove
+  face?: FormLinkHostHook
   // backend before database
-  site?: FormLinkHostMove
+  site?: FormLinkHostHook
 }
 
 export type FormLinkSite = {
@@ -132,3 +151,76 @@ export type FormLinkSize = {
   head?: number
   mark?: number
 }
+
+const DATE_TEST =
+  /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$/
+
+const testDate = (text: string) => DATE_TEST.test(text)
+
+const CODE_HOST = {
+  face: {
+    baseSelf: {
+      make: formHostCode,
+      test: testHost,
+    },
+  },
+  site: {
+    headSelf: {
+      make: formCodeHost,
+      test: testCode,
+    },
+  },
+} satisfies FormLinkHost
+
+const DATE_HOST = {
+  back: {
+    base: {
+      make: (date: Dayjs) => date.toDate(),
+    },
+  },
+  face: {
+    base: {
+      make: (date: string) => dayjs(date),
+      test: testDate,
+    },
+  },
+  site: {
+    baseSelf: {
+      make: (date: string) => dayjs(date),
+      test: testDate,
+    },
+    headSelf: {
+      make: (date: string) => dayjs(date),
+      test: testDate,
+    },
+  },
+} satisfies FormLinkHost
+
+const base = {
+  deck: 'form',
+  form: {
+    base_mark: {
+      base: FormSort.BaseMark,
+    },
+    code: {
+      base: FormSort.Text,
+      host: CODE_HOST,
+    },
+    date: {
+      base: FormSort.Date,
+      host: DATE_HOST,
+    },
+    mark: {
+      base: FormSort.Mark,
+    },
+    rise_mark: {
+      base: FormSort.RiseMark,
+    },
+    wave: {
+      base: FormSort.Wave,
+    },
+  },
+  host: 'tunebond',
+}
+
+export default base
