@@ -1,5 +1,5 @@
 {
-  "name": "@tunebond/form",
+  "name": "@wavebond/form",
   "type": "module",
   "version": "0.3.2",
   "license": "MIT",
@@ -45,9 +45,9 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "@tunebond/halt": "^0.1.6",
-    "@tunebond/have": "^0.1.1",
-    "@tunebond/tone-code": "^0.3.0",
+    "@wavebond/halt": "^0.1.6",
+    "@wavebond/have": "^0.1.1",
+    "@wavebond/tone-code": "^0.3.0",
     "dayjs": "^1.11.8",
     "lodash": "^4.17.21"
   }
