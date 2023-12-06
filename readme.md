@@ -6,7 +6,7 @@
 <br/>
 <br/>
 
-<h3 align='center'>@wavebond/form</h3>
+<h3 align='center'>@textsurf/form</h3>
 <p align='center'>
   JSON Model Specification Tool
 </p>
@@ -18,9 +18,9 @@
 ## Installation
 
 ```
-pnpm add @wavebond/form
-yarn add @wavebond/form
-npm i @wavebond/form
+pnpm add @textsurf/form
+yarn add @textsurf/form
+npm i @textsurf/form
 ```
 
 ## Specification Examples
@@ -95,11 +95,11 @@ process.
 
 MIT
 
-## WaveBond
+## TextSurf
 
-This is being developed by the folks at [WaveBond](https://wave.bond), a
+This is being developed by the folks at [TextSurf](https://text.surf), a
 California-based project for helping humanity master information and
-computation. Find us on [Twitter](https://twitter.com/_wavebond),
-[LinkedIn](https://www.linkedin.com/company/wavebond), and
-[Facebook](https://www.facebook.com/wavebond). Check out our other
-[GitHub projects](https://github.com/wavebond) as well!
+computation. Find us on [Twitter](https://twitter.com/_textsurf),
+[LinkedIn](https://www.linkedin.com/company/textsurf), and
+[Facebook](https://www.facebook.com/textsurf). Check out our other
+[GitHub projects](https://github.com/textsurf) as well!
