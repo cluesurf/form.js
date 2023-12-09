@@ -99,7 +99,7 @@ MIT
 
 This is being developed by the folks at [TextSurf](https://text.surf), a
 California-based project for helping humanity master information and
-computation. Find us on [Twitter](https://twitter.com/_textsurf),
+computation. Find us on [Twitter](https://twitter.com/textsurfcode),
 [LinkedIn](https://www.linkedin.com/company/textsurf), and
-[Facebook](https://www.facebook.com/textsurf). Check out our other
+[Facebook](https://www.facebook.com/textsurfcode). Check out our other
 [GitHub projects](https://github.com/textsurf) as well!
