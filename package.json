@@ -1,5 +1,5 @@
 {
-  "name": "@textsurf/form",
+  "name": "@termsurf/form",
   "type": "module",
   "version": "0.3.2",
   "license": "MIT",
@@ -45,9 +45,9 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "@textsurf/halt": "^0.1.6",
-    "@textsurf/have": "^0.1.1",
-    "@textsurf/tone-code": "^0.3.0",
+    "@termsurf/halt": "^0.1.6",
+    "@termsurf/have": "^0.1.1",
+    "@termsurf/tone-code": "^0.3.0",
     "dayjs": "^1.11.8",
     "lodash": "^4.17.21"
   }

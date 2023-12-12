@@ -6,7 +6,7 @@
 <br/>
 <br/>
 
-<h3 align='center'>@textsurf/form</h3>
+<h3 align='center'>@termsurf/form</h3>
 <p align='center'>
   JSON Model Specification Tool
 </p>
@@ -18,9 +18,9 @@
 ## Installation
 
 ```
-pnpm add @textsurf/form
-yarn add @textsurf/form
-npm i @textsurf/form
+pnpm add @termsurf/form
+yarn add @termsurf/form
+npm i @termsurf/form
 ```
 
 ## Specification Examples
@@ -95,11 +95,11 @@ process.
 
 MIT
 
-## TextSurf
+## TermSurf
 
-This is being developed by the folks at [TextSurf](https://text.surf), a
+This is being developed by the folks at [TermSurf](https://term.surf), a
 California-based project for helping humanity master information and
-computation. Find us on [Twitter](https://twitter.com/textsurfcode),
-[LinkedIn](https://www.linkedin.com/company/textsurf), and
-[Facebook](https://www.facebook.com/textsurfcode). Check out our other
-[GitHub projects](https://github.com/textsurf) as well!
+computation. Find us on [Twitter](https://twitter.com/termsurfcode),
+[LinkedIn](https://www.linkedin.com/company/termsurf), and
+[Facebook](https://www.facebook.com/termsurfcode). Check out our other
+[GitHub projects](https://github.com/termsurf) as well!
