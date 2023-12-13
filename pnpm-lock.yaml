@@ -5,15 +5,15 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
-  '@nerdbond/halt':
+  '@termsurf/halt':
     specifier: ^0.1.6
     version: 0.1.6
-  '@nerdbond/have':
+  '@termsurf/have':
     specifier: ^0.1.1
     version: 0.1.1
-  '@nerdbond/tone-code':
+  '@termsurf/tone-code':
     specifier: ^0.3.0
-    version: link:node_modules/@nerdbond/tone-code
+    version: link:node_modules/@termsurf/tone-code
   dayjs:
     specifier: ^1.11.8
     version: 1.11.8
@@ -750,36 +750,36 @@ packages:
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
     dev: true
 
-  /@nerdbond/halt@0.1.3:
+  /@termsurf/halt@0.1.3:
     resolution: {integrity: sha512-QGw5Qn1FDpXXJgs5nZQSPnTQVxNTjq9WZy9Vh4nCFnQzgQSYvKO39o1r8FVJY+9qIXG/DSMnnEmmRYIT3NX18A==}
     dependencies:
       ts-custom-error: 3.3.1
     dev: false
 
-  /@nerdbond/halt@0.1.6:
+  /@termsurf/halt@0.1.6:
     resolution: {integrity: sha512-IbA0lK2UjZGETHEPyCiMw22glhm2DtG6dKbP6pk14am9MOnKicjIBvBQcs6xn8YmzLdYQBWftWhrfVIH8XIVDA==}
     dependencies:
-      '@nerdbond/tint': 0.0.1
+      '@termsurf/tint': 0.0.1
       ts-custom-error: 3.3.1
     dev: false
 
-  /@nerdbond/have@0.1.1:
+  /@termsurf/have@0.1.1:
     resolution: {integrity: sha512-QHnfa3oS22wXspMqfHvwg2TFGD9GKGaiKY228XXAtzEb29COWple+Cr7qylRRM26185EgcJg+Dz9zuiuhkLjtg==}
     dependencies:
-      '@nerdbond/halt': 0.1.3
-      '@nerdbond/tone-code': 0.1.1
+      '@termsurf/halt': 0.1.3
+      '@termsurf/tone-code': 0.1.1
       '@types/uuid': 9.0.1
       lodash: 4.17.21
       uuid: 9.0.0
     dev: false
 
-  /@nerdbond/tint@0.0.1:
+  /@termsurf/tint@0.0.1:
     resolution: {integrity: sha512-MrAFVN60PEuzf6I2heXUCYXefHsjfFY1zWjJJpQ0yqGtaVc7+7won9ZWF/Ud1blgS+Dcwb/h+HMxvCN1DFhX/w==}
     dependencies:
       chalk: 5.2.0
     dev: false
 
-  /@nerdbond/tone-code@0.1.1:
+  /@termsurf/tone-code@0.1.1:
     resolution: {integrity: sha512-UKe06BEwNJcKArRtyc06Bx9OVITj+1fwMARd4mexn6zjk+kjMegmw1F2YvXrFmFyDDgXDODbC+0TPGa6aoeShg==}
     dependencies:
       '@lancejpollard/configured-quadratic-residue-prng.js': 1.0.0

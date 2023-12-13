@@ -4,8 +4,8 @@ import {
   formCodeHost,
   formHostCode,
   testHost,
-} from '@nerdbond/tone-code'
-import { HaltMesh } from '@nerdbond/halt'
+} from '@termsurf/tone-code'
+import { HaltMesh } from '@termsurf/halt'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type Base = {
@@ -220,7 +220,7 @@ const base = {
       base: FormSort.Wave,
     },
   },
-  host: 'nerdbond',
+  host: 'termsurf',
 }
 
 export default base
