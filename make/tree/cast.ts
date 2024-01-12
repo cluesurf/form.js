@@ -1,5 +1,6 @@
 import { toPascalCase } from '~/code/tool'
-import { Form, FormMesh } from '~/code/cast'
+import { Form, Hash, List, Mesh } from '~/code/cast'
+import _ from 'lodash'
 
 const TYPE: Record<string, string> = {
   ArrayBuffer: 'ArrayBuffer',
@@ -12,35 +13,52 @@ const TYPE: Record<string, string> = {
   uuid: 'string',
 }
 
-export default function make(mesh: FormMesh) {
+export default function make(mesh: Mesh) {
   const list: Array<string> = []
+
+  list.push(`import _ from 'lodash'`)
 
   for (const name in mesh) {
     list.push(``)
-    const form = mesh[name]
-    if (form) {
-      make_site({ form, mesh, name }).forEach(line => {
-        list.push(line)
-      })
+    const site = mesh[name]
+    if (site) {
+      switch (site.form) {
+        case 'form':
+          make_form({ form: site, mesh, name }).forEach(line => {
+            list.push(line)
+          })
+          break
+        case 'hash':
+          make_hash({ hash: site, mesh, name }).forEach(line => {
+            list.push(line)
+          })
+          break
+        case 'list':
+          make_list({ list: site, mesh, name }).forEach(line => {
+            list.push(line)
+          })
+          break
+      }
     }
   }
 
   return list
 }
 
-export function make_site({
+export function make_form({
   name,
   form,
   mesh,
 }: {
   name: string
   form: Form
-  mesh: FormMesh
+  mesh: Mesh
 }) {
   const list: Array<string> = []
 
   if ('link' in form) {
-    list.push(`export type ${toPascalCase(name)} = {`)
+    const base = form.base ? `${toPascalCase(form.base)} & ` : ''
+    list.push(`export type ${toPascalCase(name)} = ${base}{`)
   } else {
     list.push(`export type ${toPascalCase(name)} =`)
   }
@@ -53,7 +71,113 @@ export function make_site({
     list.push(`}`)
   }
 
+  if (form.save && 'link' in form) {
+    list.push(``)
+    list.push(`export const ${_.snakeCase(name).toUpperCase()} =`)
+    if (form.base) {
+      list.push(
+        `_.merge({}, ${_.snakeCase(form.base).toUpperCase()}, {`,
+      )
+    } else {
+      list.push(`{`)
+    }
+    if (form.note) {
+      list.push(`  note: $${form.note},`)
+    }
+    list.push(`  link: {`)
+    for (const name in form.link) {
+      const link = form.link[name]
+      if (link) {
+        list.push(`    ${name}: ${JSON.stringify(link, null, 2)},`)
+      }
+    }
+    list.push(`},`)
+    if (form.base) {
+      list.push(`})`)
+    } else {
+      list.push(`}`)
+    }
+  }
+
   return list
+}
+
+export function make_hash({
+  name,
+  hash,
+  mesh,
+}: {
+  name: string
+  hash: Hash
+  mesh: Mesh
+}) {
+  const list = make_form({
+    form: hash.bond,
+    mesh,
+    name: `${name}_VALUE`,
+  })
+  const typeName = toPascalCase(name)
+  const TYPE_NAME = _.snakeCase(name).toUpperCase()
+
+  if (hash.link) {
+    list.push(``)
+    list.push(
+      `export type ${typeName} = Record<${toPascalCase(
+        hash.link,
+      )}, ${typeName}Value>`,
+    )
+  } else {
+    const keyList = Object.keys(hash.hash)
+
+    list.push(
+      `export const ${TYPE_NAME}_KEY = ` +
+        JSON.stringify(keyList, null, 2) +
+        ' as const',
+    )
+
+    list.push(``)
+    list.push(
+      `export type ${typeName}Key = (typeof ${TYPE_NAME}_KEY)[number]`,
+    )
+
+    list.push(``)
+    list.push(
+      `export type ${typeName} = Record<${typeName}Key, ${typeName}Value>`,
+    )
+  }
+
+  list.push(``)
+  list.push(
+    `export const ${TYPE_NAME}: ${typeName} = ` +
+      JSON.stringify(hash.hash, null, 2),
+  )
+
+  return list
+}
+
+export function make_list({
+  name,
+  list,
+  mesh,
+}: {
+  name: string
+  list: List
+  mesh: Mesh
+}) {
+  const text: Array<string> = []
+  const typeName = toPascalCase(name)
+  const TYPE_NAME = _.snakeCase(name).toUpperCase()
+
+  text.push(
+    `export const ${TYPE_NAME} = ` +
+      JSON.stringify(list.list, null, 2) +
+      ' as const',
+  )
+
+  text.push(``)
+  text.push(`export type ${typeName} = (typeof ${TYPE_NAME})[number]`)
+
+  return text
 }
 
 export function make_link_list({
@@ -61,7 +185,7 @@ export function make_link_list({
   mesh,
 }: {
   form: Form
-  mesh: FormMesh
+  mesh: Mesh
 }) {
   const list: Array<string> = []
 
@@ -78,16 +202,26 @@ export function make_link_list({
         const type = TYPE[link.like] ?? toPascalCase(link.like)
         list.push(`  ${name}${optional}: ${aS}${type}${aE}`)
       } else if (link.case) {
-        const like_case: Array<string> = []
-        link.case.forEach(c => {
-          if (c.like) {
-            const type = TYPE[c.like] ?? toPascalCase(c.like)
-            like_case.push(type)
+        if (Array.isArray(link.case)) {
+          const like_case: Array<string> = []
+          link.case.forEach(c => {
+            if (c.like) {
+              const type = TYPE[c.like] ?? toPascalCase(c.like)
+              like_case.push(type)
+            }
+          })
+          list.push(
+            `  ${name}${optional}: ${aS}${like_case.join(' | ')}${aE}`,
+          )
+        } else {
+          const like_case: Array<string> = []
+          for (const name in link.case) {
+            like_case.push(`'${name}'`)
           }
-        })
-        list.push(
-          `  ${name}${optional}: ${aS}${like_case.join(' | ')}${aE}`,
-        )
+          list.push(
+            `  ${name}${optional}: ${aS}${like_case.join(' | ')}${aE}`,
+          )
+        }
       } else if (link.fuse) {
         const like_fuse: Array<string> = []
         link.fuse.forEach(c => {

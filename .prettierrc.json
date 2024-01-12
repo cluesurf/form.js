@@ -12,7 +12,13 @@
   "endOfLine": "lf",
   "singleAttributePerLine": true,
   "prettierPath": "./node_modules/prettier",
-  "importOrder": ["^\\w(.*)$", "^@(.*)$", "~(.*)$", "\\..(.*)$", "\\.(.*)$"],
+  "importOrder": [
+    "^\\w(.*)$",
+    "^@(.*)$",
+    "~(.*)$",
+    "\\..(.*)$",
+    "\\.(.*)$"
+  ],
   "importOrderSeparation": true,
   "importOrderSortSpecifiers": true
 }

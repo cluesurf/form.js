@@ -8,11 +8,18 @@
     "sourceType": "module",
     "project": ["./tsconfig.json"]
   },
+  "overrides": [
+    {
+      "files": ["*.yaml", "*.yml"],
+      "parser": "yaml-eslint-parser"
+    }
+  ],
   "parser": "@typescript-eslint/parser",
   "plugins": [
     "@typescript-eslint",
     "import",
     "simple-import-sort",
+    "sort-exports",
     "typescript-sort-keys",
     "sort-keys",
     "prettier"
@@ -36,19 +43,19 @@
       }
     ],
     "@typescript-eslint/await-thenable": "error",
-    "@typescript-eslint/consistent-type-definitions": [2, "type"],
+    "@typescript-eslint/consistent-type-definitions": 0,
     "@typescript-eslint/consistent-type-exports": "error",
     "@typescript-eslint/method-signature-style": "error",
     "@typescript-eslint/naming-convention": 0,
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-for-in-array": "error",
-    "@typescript-eslint/no-namespace": "off",
+    "@typescript-eslint/no-namespace": 0,
     "@typescript-eslint/no-non-null-assertion": "error",
     "@typescript-eslint/no-require-imports": "error",
     "@typescript-eslint/no-this-alias": "error",
     "@typescript-eslint/no-unsafe-argument": "error",
-    "@typescript-eslint/no-unsafe-assignment": "error",
-    "@typescript-eslint/no-unsafe-member-access": "error",
+    "@typescript-eslint/no-unsafe-assignment": "off",
+    "@typescript-eslint/no-unsafe-member-access": "off",
     "@typescript-eslint/no-unsafe-return": "error",
     "@typescript-eslint/no-useless-empty-export": "error",
     "@typescript-eslint/prefer-function-type": "error",
@@ -78,10 +85,11 @@
     "import/first": "error",
     "import/newline-after-import": "error",
     "import/no-duplicates": "error",
+    "sort-exports/sort-exports": "off",
     "typescript-sort-keys/interface": "off",
     "typescript-sort-keys/string-enum": "off",
-    "sort-keys": 0,
-    "sort-keys/sort-keys-fix": 2,
+    "sort-keys": "off",
+    "sort-keys/sort-keys-fix": "off",
     "prettier/prettier": 2,
     "@typescript-eslint/no-unused-vars": "off",
     "default-case": "off",

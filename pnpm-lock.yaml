@@ -12,8 +12,8 @@ dependencies:
     specifier: ^0.1.2
     version: 0.1.2
   '@termsurf/love-code':
-    specifier: ^0.1.4
-    version: 0.1.4
+    specifier: ^0.1.8
+    version: 0.1.8
   dayjs:
     specifier: ^1.11.8
     version: 1.11.8
@@ -745,8 +745,8 @@ packages:
       ts-custom-error: 3.3.1
     dev: false
 
-  /@termsurf/love-code@0.1.4:
-    resolution: {integrity: sha512-akUEfpSjclzrj8+AbSY7EekMOdsG54U3UKefokcR1IuoXQ2y5oCICKumhZSTEIgNCkpvhub/HFhOjH4n0tOihQ==}
+  /@termsurf/love-code@0.1.8:
+    resolution: {integrity: sha512-HQyg7KAwh1tAPieBbwZkm2GHOexmUmXOL4Zrq1f7AySH+lUr6Ul1WNE7NasL/raHh9m4k00j6Zac8Yi1hn+Alw==}
     dependencies:
       '@lancejpollard/configured-quadratic-residue-prng.js': 1.0.0
     dev: false

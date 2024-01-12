@@ -1,11 +1,11 @@
 {
   "name": "@termsurf/form",
-  "version": "0.4.1",
+  "version": "0.4.28",
   "license": "MIT",
   "main": "./host/index.js",
   "scripts": {
-    "make": "tsc && tsc-alias",
-    "scan": "concurrently --kill-others \"tsc -w\" \"tsc-alias -w\"",
+    "make": "rm -rf host && tsc && tsc-alias",
+    "scan": "rm -rf host && concurrently --kill-others \"tsc -w\" \"tsc-alias -w\"",
     "lint": "eslint --ext .ts ./make",
     "lint:fix": "npm run lint -- --fix",
     "test:make": "npx tsx test/make.ts",
@@ -43,7 +43,7 @@
   "dependencies": {
     "@termsurf/have": "^0.2.0",
     "@termsurf/kink": "^0.1.2",
-    "@termsurf/love-code": "^0.1.4",
+    "@termsurf/love-code": "^0.1.8",
     "dayjs": "^1.11.8",
     "lodash": "^4.17.21"
   }

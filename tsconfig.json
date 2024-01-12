@@ -6,14 +6,16 @@
     "outDir": "host",
     "rootDir": ".",
     "sourceMap": true,
+    "declaration": true,
     "moduleResolution": "node",
     "strictNullChecks": true,
     "strict": true,
     "esModuleInterop": true,
     "noUncheckedIndexedAccess": true,
     "baseUrl": ".",
-    "allowJs": true,
+    "allowJs": false,
     "noErrorTruncation": true,
+    "resolveJsonModule": true,
     "types": ["node"],
     "typeRoots": ["node_modules/@types"],
     "noImplicitAny": false,
@@ -23,5 +25,5 @@
     }
   },
   "include": ["*.ts", "**/*.ts", "*.d.ts"],
-  "exclude": ["node_modules", "./host/**/*"]
+  "exclude": ["node_modules", "host", "tmp", "test"]
 }

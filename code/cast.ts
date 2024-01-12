@@ -1,11 +1,13 @@
-export type FormLoad = {
-  link: string
-  mesh: FormMesh
+export type Load = {
+  test: string
+  mesh: Mesh
 }
 
 export type FormBond = string | number | boolean | null
 
 export type FormBase = {
+  form: 'form'
+  save?: boolean
   test?: (bond: any, link?: any) => boolean
   note?: string
 }
@@ -19,25 +21,30 @@ export type FormBaseFuse = FormBase & {
 }
 
 export type FormBaseLink = FormBase & {
+  base?: string
   link: FormLinkMesh
+  name?: string
 }
 
 export type Form = FormBaseCase | FormBaseFuse | FormBaseLink
 
-export type FormMesh = Record<string, Form>
+export type Mesh = Record<string, Form | Hash | List | Test>
 
 export type FormLinkMesh = Record<string, FormLink>
 
 export type FormLink = {
+  head?: string
   note?: string
   back?: string
-  base?: any
+  base?: string
+  fall?: any
   bind?: FormBond | Record<string, FormBond> | Array<FormBond>
   fill?: boolean
   hold?: boolean
   like?: string
-  case?: Array<FormLink>
+  case?: Record<string, FormLink> | Array<FormLink>
   fuse?: Array<FormLink>
+  bond?: FormLink
   link?: FormLinkMesh
   list?: boolean
   name?: string
@@ -51,9 +58,29 @@ export type FormLink = {
         rise_meet?: number
       }
   take?: Array<any>
-  test?: {
-    call: (bond: any, link?: any) => boolean
-    note: string | ((bond: any) => string)
-  }
+  test?: string
   trim?: boolean
+}
+
+export type Hash = {
+  form: 'hash'
+  hash: Record<string, any>
+  link?: string
+  bond: Form
+}
+
+export type List = {
+  form: 'list'
+  list: Array<any>
+}
+
+export type Test = {
+  form: 'test'
+  test: (bond: any, name: string) => boolean | string | TestBack
+}
+
+export type TestBack = {
+  message?: string
+  path?: Array<string>
+  params?: any
 }

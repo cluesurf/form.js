@@ -1,5 +1,6 @@
 import { toPascalCase } from '~/code/tool'
-import { Form, FormMesh } from '~/code/cast'
+import { Form, Hash, List, Mesh } from '~/code/cast'
+import _ from 'lodash'
 
 const TYPE: Record<string, string> = {
   ArrayBuffer: 'z.instanceof(ArrayBuffer)',
@@ -12,42 +13,116 @@ const TYPE: Record<string, string> = {
   uuid: 'z.string().uuid()',
 }
 
-export default function make(link: string, mesh: FormMesh) {
+export default function make(test: string, mesh: Mesh) {
   const list: Array<string> = []
 
   list.push(`import { z } from 'zod'`)
   list.push(`import * as Cast from './cast'`)
-  list.push(`import * as mesh from '${link}'`)
+
+  list.push(`import { TEST } from '@termsurf/form'`)
+  list.push(`import * as test from '${test}'`)
 
   for (const name in mesh) {
-    list.push(``)
-    const form = mesh[name]
-    if (form) {
-      make_site({ form, mesh, name }).forEach(line => {
-        list.push(line)
-      })
+    const site = mesh[name]
+    if (site) {
+      switch (site.form) {
+        case 'form':
+          list.push(``)
+          make_form({ form: site, mesh, name }).forEach(line => {
+            list.push(line)
+          })
+          break
+        case 'test':
+          // make_test({ mesh, name, test: site }).forEach(line => {
+          //   list.push(line)
+          // })
+          break
+        case 'hash':
+          list.push(``)
+          make_hash({ hash: site, mesh, name }).forEach(line => {
+            list.push(line)
+          })
+          break
+        case 'list':
+          list.push(``)
+          make_list({ list: site, mesh, name }).forEach(line => {
+            list.push(line)
+          })
+          break
+      }
     }
   }
 
   return list
 }
 
-export function make_site({
+export function make_hash({
+  name,
+  hash,
+  mesh,
+}: {
+  name: string
+  hash: Hash
+  mesh: Mesh
+}) {
+  const list: Array<string> = []
+
+  const typeName = toPascalCase(name)
+  const TYPE_NAME = _.snakeCase(name).toUpperCase()
+
+  if (hash.link) {
+    //
+  } else {
+    list.push(
+      `export const ${typeName}KeyModel: z.ZodType<Cast.${typeName}Key> = z.enum(Cast.${TYPE_NAME}_KEY)`,
+    )
+  }
+
+  return list
+}
+
+export function make_list({
+  name,
+  list,
+  mesh,
+}: {
+  name: string
+  list: List
+  mesh: Mesh
+}) {
+  const text: Array<string> = []
+
+  const typeName = toPascalCase(name)
+  const TYPE_NAME = _.snakeCase(name).toUpperCase()
+
+  text.push(
+    `export const ${typeName}Model: z.ZodType<Cast.${typeName}> = z.enum(Cast.${TYPE_NAME})`,
+  )
+
+  return text
+}
+
+export function make_form({
   name,
   form,
   mesh,
 }: {
   name: string
   form: Form
-  mesh: FormMesh
+  mesh: Mesh
 }) {
   const list: Array<string> = []
 
   const typeName = toPascalCase(name)
 
   if ('link' in form) {
+    const base = form.base
+      ? `(${toPascalCase(
+          form.base,
+        )}Model as z.ZodObject<z.ZodRawShape>).extend(`
+      : 'z.object('
     list.push(
-      `export const ${typeName}Model: z.ZodType<Cast.${typeName}> = z.object({`,
+      `export const ${typeName}Model: z.ZodType<Cast.${typeName}> = ${base}{`,
     )
   } else {
     list.push(
@@ -72,7 +147,7 @@ export function make_link_list({
   name: formName,
 }: {
   form: Form
-  mesh: FormMesh
+  mesh: Mesh
   name: string
 }) {
   const list: Array<string> = []
@@ -88,7 +163,7 @@ export function make_link_list({
       const aS = link.list === true ? 'z.array(' : ''
       const aE = link.list === true ? ')' : ''
       const r = link.test
-        ? `.refine(mesh.${formName}.link.${name}.test.call as (bond: any) => boolean, mesh.${formName}.link.${name}.test.note)`
+        ? `.refine(TEST('${name}', test.${link.test}.test))`
         : ''
       if (typeof link.like === 'string') {
         let type = TYPE[link.like]
@@ -101,33 +176,45 @@ export function make_link_list({
           )
         }
       } else if (link.case) {
-        const like_case: Array<string> = []
-        link.case.forEach((c, i) => {
-          if (c.like) {
-            let type = TYPE[c.like]
-            const r = c.test
-              ? `.refine(mesh.${formName}.link.${name}.case[${i}]?.test.call as (bond: any) => boolean, mesh.${formName}.link.${name}.case[${i}]?.test.note)`
-              : ''
-            if (type) {
-              like_case.push(`${type}${r}`)
-            } else {
-              type = `${toPascalCase(c.like)}Model`
-              like_case.push(`z.lazy(() => ${type})${r}`)
+        if (Array.isArray(link.case)) {
+          const like_case: Array<string> = []
+          link.case.forEach((c, i) => {
+            if (c.like) {
+              let type = TYPE[c.like]
+              const r = c.test
+                ? `.refine(TEST('${name}', test.${c.test}.test))`
+                : ''
+              if (type) {
+                like_case.push(`${type}${r}`)
+              } else {
+                type = `${toPascalCase(c.like)}Model`
+                like_case.push(`z.lazy(() => ${type})${r}`)
+              }
             }
+          })
+          list.push(
+            `  ${name}: ${oS}${aS}z.union([${like_case.join(
+              ', ',
+            )}])${aE}${oE},`,
+          )
+        } else {
+          const like_case: Array<string> = []
+          for (const name in link.case) {
+            like_case.push(`'${name}'`)
           }
-        })
-        list.push(
-          `  ${name}: ${oS}${aS}z.union([${like_case.join(
-            ', ',
-          )}])${aE}${oE},`,
-        )
+          list.push(
+            `  ${name}: ${oS}${aS}z.enum([${like_case.join(
+              ', ',
+            )}])${aE}${oE},`,
+          )
+        }
       } else if (link.fuse) {
         const like_fuse: Array<string> = []
         link.fuse.forEach((c, i) => {
           if (c.like) {
             let type = TYPE[c.like]
             const r = c.test
-              ? `.refine(mesh.${formName}.link.${name}.fuse[${i}]?.test.call as (bond: any) => boolean, mesh.${formName}.link.${name}.fuse[${i}]?.test.note)`
+              ? `.refine(TEST('${name}', test.${c.test}.test))`
               : ''
             if (type) {
               like_fuse.push(`${type}${r}`)

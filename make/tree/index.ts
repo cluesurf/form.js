@@ -1,15 +1,16 @@
 import love_code from '@termsurf/love-code'
 import make_cast from './cast'
 import make_take from './take'
-import { FormLoad, FormMesh } from '~/code/cast'
+import { Load } from '~/code/cast'
 
-export default async function make(load: FormLoad) {
+export default async function make(load: Load) {
+  const { test, mesh } = load
+
   const cast_list: Array<string> = []
-  const { link, mesh } = load
   cast_list.push(...make_cast(mesh))
 
   const take_list: Array<string> = []
-  take_list.push(...make_take(link, mesh))
+  take_list.push(...make_take(test, mesh))
 
   const base = `export * from './cast'
 export * from './take'
