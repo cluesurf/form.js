@@ -1,0 +1,11 @@
+.vscode
+.prettierignore
+.prettierrc.json
+.eslintrc.json
+tsconfig.json
+tsconfig.lib.json
+/code
+/make
+/tmp
+/test
+/index.ts

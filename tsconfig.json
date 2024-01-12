@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
-    "target": "ESNext",
-    "lib": ["es2020"],
+    "module": "CommonJS",
+    "target": "ES5",
+    "lib": ["es2020", "dom"],
     "outDir": "host",
     "rootDir": ".",
     "sourceMap": true,
@@ -12,12 +12,16 @@
     "esModuleInterop": true,
     "noUncheckedIndexedAccess": true,
     "baseUrl": ".",
+    "allowJs": true,
     "noErrorTruncation": true,
     "types": ["node"],
     "typeRoots": ["node_modules/@types"],
-    "noImplicitAny": true,
-    "declaration": true
+    "noImplicitAny": false,
+    "paths": {
+      "~/*": ["./*"],
+      "~": ["./index.ts"]
+    }
   },
   "include": ["*.ts", "**/*.ts", "*.d.ts"],
-  "exclude": ["node_modules", "host", "hold"]
+  "exclude": ["node_modules", "./host/**/*"]
 }
