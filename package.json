@@ -1,8 +1,9 @@
 {
   "name": "@termsurf/form",
-  "version": "0.4.28",
+  "version": "0.4.56",
   "license": "MIT",
   "main": "./host/index.js",
+  "type": "module",
   "scripts": {
     "make": "rm -rf host && tsc && tsc-alias",
     "scan": "rm -rf host && concurrently --kill-others \"tsc -w\" \"tsc-alias -w\"",

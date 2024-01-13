@@ -1,3 +1,5 @@
+import { RefinementCtx } from 'zod'
+
 export type Load = {
   test: string
   mesh: Mesh
@@ -13,22 +15,27 @@ export type FormBase = {
 }
 
 export type FormBaseCase = FormBase & {
-  case: Array<string | number | { like: string }>
+  case: Array<string | number | FormLike>
 }
 
+export type FormLike = { like: string }
+
 export type FormBaseFuse = FormBase & {
-  fuse: Array<{ like: string }>
+  fuse: Array<FormLike>
 }
 
 export type FormBaseLink = FormBase & {
   base?: string
   link: FormLinkMesh
   name?: string
+  make?: string
+  leak?: boolean
+  load?: Array<string>
 }
 
 export type Form = FormBaseCase | FormBaseFuse | FormBaseLink
 
-export type Mesh = Record<string, Form | Hash | List | Test>
+export type Mesh = Record<string, Form | Hash | List | Test | Make>
 
 export type FormLinkMesh = Record<string, FormLink>
 
@@ -77,6 +84,11 @@ export type List = {
 export type Test = {
   form: 'test'
   test: (bond: any, name: string) => boolean | string | TestBack
+}
+
+export type Make = {
+  form: 'make'
+  test: (bond: any, ctx: RefinementCtx) => boolean | string | TestBack
 }
 
 export type TestBack = {

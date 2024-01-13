@@ -1,8 +1,18 @@
 import _ from 'lodash'
 import { TestBack } from './cast'
+import { RefinementCtx } from 'zod'
 
 export function toPascalCase(text: string) {
   return _.startCase(_.camelCase(text)).replace(/ /g, '')
+}
+
+export function MAKE(
+  name: string,
+  fn: (bond: any, ctx: RefinementCtx, name: string) => any,
+): (bond: any, ctx: RefinementCtx) => any {
+  return (bond: any, ctx: RefinementCtx): any => {
+    return fn(bond, ctx, name)
+  }
 }
 
 export function TEST(

@@ -9,3 +9,4 @@ tsconfig.lib.json
 /tmp
 /test
 /index.ts
+.dockerignore

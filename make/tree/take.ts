@@ -1,5 +1,12 @@
 import { toPascalCase } from '~/code/tool'
-import { Form, Hash, List, Mesh } from '~/code/cast'
+import {
+  Form,
+  FormLike,
+  FormLinkMesh,
+  Hash,
+  List,
+  Mesh,
+} from '~/code/cast'
 import _ from 'lodash'
 
 const TYPE: Record<string, string> = {
@@ -10,17 +17,19 @@ const TYPE: Record<string, string> = {
   json: 'z.passthrough()',
   string: 'z.string()',
   timestamp: 'z.coerce.date()',
+  date: 'z.coerce.date()',
   uuid: 'z.string().uuid()',
+  natural_number: 'z.number().int().gte(0)',
 }
 
-export default function make(test: string, mesh: Mesh) {
+export default function make(code: string, mesh: Mesh) {
   const list: Array<string> = []
 
   list.push(`import { z } from 'zod'`)
   list.push(`import * as Cast from './cast'`)
 
-  list.push(`import { TEST } from '@termsurf/form'`)
-  list.push(`import * as test from '${test}'`)
+  list.push(`import { MAKE, TEST } from '@termsurf/form'`)
+  list.push(`import code from '${code}'`)
 
   for (const name in mesh) {
     const site = mesh[name]
@@ -114,6 +123,8 @@ export function make_form({
   const list: Array<string> = []
 
   const typeName = toPascalCase(name)
+  const leak = 'leak' in form && form.leak
+  const load = 'load' in form && form.load
 
   if ('link' in form) {
     const base = form.base
@@ -130,13 +141,42 @@ export function make_form({
     )
   }
 
-  make_link_list({ form, mesh, name }).forEach(line => {
+  make_link_list({
+    form,
+    mesh,
+    leak,
+  }).forEach(line => {
     list.push(`  ${line}`)
   })
 
   if ('link' in form) {
     list.push(`})`)
+    if (form.make) {
+      list.push(`.transform(MAKE('${name}', code.${form.make}.make))`)
+    }
+    if (leak) {
+      list.push(`.passthrough()`)
+    }
   }
+
+  // const link: Array<string> = []
+
+  // if (load) {
+  //   load.forEach(l => {
+  //     link.push(toPascalCase(l))
+  //   })
+  // }
+
+  // list.push(``)
+  // list.push(
+  //   `export function load${typeName}(source: any): Cast.${typeName} {`,
+  // )
+  // list.push(`  let x = source`)
+  // link.forEach(l => {
+  //   list.push(`  x = ${l}Model.parse(x)`)
+  // })
+  // list.push(`  return x as Cast.${typeName}`)
+  // list.push(`}`)
 
   return list
 }
@@ -144,11 +184,11 @@ export function make_form({
 export function make_link_list({
   form,
   mesh,
-  name: formName,
+  leak,
 }: {
-  form: Form
+  form: Form | FormLinkMesh
   mesh: Mesh
-  name: string
+  leak?: boolean
 }) {
   const list: Array<string> = []
 
@@ -163,16 +203,21 @@ export function make_link_list({
       const aS = link.list === true ? 'z.array(' : ''
       const aE = link.list === true ? ')' : ''
       const r = link.test
-        ? `.refine(TEST('${name}', test.${link.test}.test))`
+        ? `.refine(TEST('${name}', code.${link.test}.test))`
         : ''
+      const f =
+        link.fall != null
+          ? `.default(${JSON.stringify(link.fall)})`
+          : ''
+      const l = leak ? `.passthrough()` : ''
       if (typeof link.like === 'string') {
         let type = TYPE[link.like]
         if (type) {
-          list.push(`  ${name}: ${oS}${aS}${type}${r}${aE}${oE},`)
+          list.push(`  ${name}: ${oS}${aS}${type}${r}${aE}${oE}${f},`)
         } else {
-          type = `${toPascalCase(link.like)}Model`
+          type = `${toPascalCase(link.like as string)}Model${l}`
           list.push(
-            `  ${name}: ${oS}${aS}z.lazy(() => ${type})${r}${aE}${oE},`,
+            `  ${name}: ${oS}${aS}z.lazy(() => ${type})${r}${f}${aE}${oE},`,
           )
         }
       } else if (link.case) {
@@ -182,12 +227,12 @@ export function make_link_list({
             if (c.like) {
               let type = TYPE[c.like]
               const r = c.test
-                ? `.refine(TEST('${name}', test.${c.test}.test))`
+                ? `.refine(TEST('${name}', code.${c.test}.test))`
                 : ''
               if (type) {
                 like_case.push(`${type}${r}`)
               } else {
-                type = `${toPascalCase(c.like)}Model`
+                type = `${toPascalCase(c.like as string)}Model`
                 like_case.push(`z.lazy(() => ${type})${r}`)
               }
             }
@@ -214,12 +259,12 @@ export function make_link_list({
           if (c.like) {
             let type = TYPE[c.like]
             const r = c.test
-              ? `.refine(TEST('${name}', test.${c.test}.test))`
+              ? `.refine(TEST('${name}', code.${c.test}.test))`
               : ''
             if (type) {
               like_fuse.push(`${type}${r}`)
             } else {
-              type = `${toPascalCase(c.like)}Model`
+              type = `${toPascalCase(c.like as string)}Model`
               like_fuse.push(`z.lazy(() => ${type})${r}`)
             }
           }
@@ -229,13 +274,24 @@ export function make_link_list({
             ', ',
           )}])${aE}${oE},`,
         )
+      } else if (link.link) {
+        list.push(`  ${name}: ${oS}${aS}z.object({`)
+        make_link_list({
+          form: link as FormLinkMesh,
+          mesh,
+          leak,
+        }).forEach(line => {
+          list.push(`  ${line}`)
+        })
+        list.push(`})${l}${aE}${oE},`)
       }
     }
   } else if ('case' in form) {
     const formList: Array<string> = []
     const baseList: Array<any> = []
+    const formCase = form.case as Array<FormLike>
 
-    form.case.forEach(item => {
+    formCase.forEach(item => {
       if (typeof item === 'object' && 'like' in item) {
         formList.push(`z.lazy(() => ${item.like}Model)`)
       } else {
@@ -263,8 +319,9 @@ export function make_link_list({
     list.push(formSite)
   } else if ('fuse' in form) {
     const formList: Array<string> = []
+    const fuse = form.fuse as Array<FormLike>
 
-    form.fuse.forEach(item => {
+    fuse.forEach(item => {
       formList.push(`z.lazy(() => ${item.like}Model)`)
     })
 
