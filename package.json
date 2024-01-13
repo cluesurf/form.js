@@ -1,6 +1,6 @@
 {
   "name": "@termsurf/form",
-  "version": "0.4.56",
+  "version": "0.4.68",
   "license": "MIT",
   "main": "./host/index.js",
   "type": "module",
@@ -44,7 +44,7 @@
   "dependencies": {
     "@termsurf/have": "^0.2.0",
     "@termsurf/kink": "^0.1.2",
-    "@termsurf/love-code": "^0.1.8",
+    "@termsurf/love-code": "^0.1.10",
     "dayjs": "^1.11.8",
     "lodash": "^4.17.21"
   }

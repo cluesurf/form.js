@@ -123,15 +123,16 @@ export function make_hash({
   mesh: Mesh
 }) {
   const list = make_form({
-    form: hash.bond,
+    form: { form: 'form', link: hash.bond },
     mesh,
     name: `${name}_VALUE`,
   })
+  list.push(``)
+
   const typeName = toPascalCase(name)
   const TYPE_NAME = _.snakeCase(name).toUpperCase()
 
   if (hash.link) {
-    list.push(``)
     list.push(
       `export type ${typeName} = Record<${toPascalCase(
         hash.link,

@@ -73,7 +73,7 @@ export type Hash = {
   form: 'hash'
   hash: Record<string, any>
   link?: string
-  bond: Form
+  bond: FormLinkMesh
 }
 
 export type List = {
@@ -88,7 +88,7 @@ export type Test = {
 
 export type Make = {
   form: 'make'
-  test: (bond: any, ctx: RefinementCtx) => boolean | string | TestBack
+  make: (bond: any, ctx: RefinementCtx, name: string) => any
 }
 
 export type TestBack = {

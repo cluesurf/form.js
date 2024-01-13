@@ -26,10 +26,10 @@ export default function make(code: string, mesh: Mesh) {
   const list: Array<string> = []
 
   list.push(`import { z } from 'zod'`)
-  list.push(`import * as Cast from './cast'`)
+  list.push(`import * as Cast from './cast.js'`)
 
   list.push(`import { MAKE, TEST } from '@termsurf/form'`)
-  list.push(`import code from '${code}'`)
+  list.push(`import * as code from '${code}'`)
 
   for (const name in mesh) {
     const site = mesh[name]
