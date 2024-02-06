@@ -1,4 +1,4 @@
-import { toPascalCase } from '~/code/tool'
+import { toPascalCase } from '~/code/tool.js'
 import {
   Form,
   FormLike,
@@ -6,7 +6,7 @@ import {
   Hash,
   List,
   Mesh,
-} from '~/code/cast'
+} from '~/code/cast.js'
 import _ from 'lodash'
 
 const TYPE: Record<string, string> = {
@@ -14,7 +14,7 @@ const TYPE: Record<string, string> = {
   boolean: 'z.boolean()',
   decimal: 'z.number()',
   integer: 'z.number().int()',
-  json: 'z.passthrough()',
+  json: 'z.object({}).passthrough()',
   string: 'z.string()',
   timestamp: 'z.coerce.date()',
   date: 'z.coerce.date()',

@@ -1,6 +1,6 @@
 {
   "name": "@termsurf/form",
-  "version": "0.4.68",
+  "version": "0.4.86",
   "license": "MIT",
   "main": "./host/index.js",
   "type": "module",

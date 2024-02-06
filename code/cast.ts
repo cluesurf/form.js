@@ -54,7 +54,10 @@ export type FormLink = {
   bond?: FormLink
   link?: FormLinkMesh
   list?: boolean
-  name?: string
+  name?: {
+    base?: string // database name
+    mark?: string // cli short name
+  }
   need?: boolean
   size?:
     | number

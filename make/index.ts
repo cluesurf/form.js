@@ -1,5 +1,5 @@
-import { Load, Mesh } from '~/code/cast'
-import make_tree from './tree'
+import { Load } from '~/code/cast.js'
+import make_tree from './tree/index.js'
 
 export default async function make(load: Load) {
   // const call = await make_call(mesh)

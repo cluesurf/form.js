@@ -1,4 +1,4 @@
-import { toPascalCase } from '~/code/tool'
+import { toPascalCase } from '~/code/tool.js'
 import {
   Form,
   FormBaseFuse,
@@ -8,7 +8,7 @@ import {
   Hash,
   List,
   Mesh,
-} from '~/code/cast'
+} from '~/code/cast.js'
 import _ from 'lodash'
 
 const TYPE: Record<string, string> = {
