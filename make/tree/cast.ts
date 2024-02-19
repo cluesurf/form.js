@@ -1,8 +1,6 @@
 import { toPascalCase } from '~/code/tool.js'
 import {
   Form,
-  FormBaseFuse,
-  FormBaseLink,
   FormLike,
   FormLinkMesh,
   Hash,
@@ -12,7 +10,8 @@ import {
 import _ from 'lodash'
 
 const TYPE: Record<string, string> = {
-  ArrayBuffer: 'ArrayBuffer',
+  array_buffer: 'ArrayBuffer',
+  blob: 'Blob',
   boolean: 'boolean',
   decimal: 'number',
   integer: 'number',
@@ -78,7 +77,7 @@ export function make_form({
     list.push(`  ${line}`)
   })
 
-  if ('link' in form || 'case' in form || 'fuse' in form) {
+  if ('link' in form) {
     list.push(`}`)
   }
 
@@ -256,6 +255,12 @@ export function make_link_list({
           list.push(`  ${line}`)
         })
         list.push(`}${aE}`)
+      } else if (link.take) {
+        list.push(
+          `  ${name}${optional}: ${aS}${link.take
+            .map(x => `'${x}'`)
+            .join(' | ')}${aE}`,
+        )
       }
     }
   } else if ('case' in form) {
@@ -265,13 +270,9 @@ export function make_link_list({
 
     formCase.forEach(item => {
       if (typeof item === 'object' && 'like' in item) {
-        formList.push(item.like)
-      } else {
-        if (typeof item === 'string') {
-          baseList.push(`'${item}'`)
-        } else {
-          baseList.push(item)
-        }
+        const type =
+          TYPE[item.like] ?? toPascalCase(item.like as string)
+        formList.push(type)
       }
     })
 
@@ -289,7 +290,8 @@ export function make_link_list({
     const fuse = form.fuse as Array<FormLike>
 
     fuse.forEach(item => {
-      formList.push(item.like)
+      const type = TYPE[item.like] ?? toPascalCase(item.like as string)
+      formList.push(type)
     })
 
     let formSite = `${formList.join(' & ')}`

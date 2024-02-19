@@ -1,6 +1,6 @@
 {
   "name": "@termsurf/form",
-  "version": "0.4.86",
+  "version": "0.4.92",
   "license": "MIT",
   "main": "./host/index.js",
   "type": "module",
@@ -10,7 +10,7 @@
     "lint": "eslint --ext .ts ./make",
     "lint:fix": "npm run lint -- --fix",
     "test:make": "npx tsx test/make.ts",
-    "test": "npx tsx test/load.ts",
+    "test": "npx tsx test/index.ts",
     "host": "pnpm make && npm publish --access=public"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 import * as form from './form'
 import * as test from './test'
-import make from '~/make'
+import make from '../make'
 import fs from 'fs'
 import { convertObjectKeyCase } from '../host'
 

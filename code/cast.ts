@@ -15,10 +15,14 @@ export type FormBase = {
 }
 
 export type FormBaseCase = FormBase & {
-  case: Array<string | number | FormLike>
+  case: Array<FormLike>
 }
 
-export type FormLike = { like: string }
+export type FormLike = {
+  like: string
+  test?: (bond: any, link?: any) => boolean
+  note?: string
+}
 
 export type FormBaseFuse = FormBase & {
   fuse: Array<FormLike>

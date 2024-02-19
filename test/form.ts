@@ -1,21 +1,26 @@
-import { Hash, List, Form } from '~/code/cast'
+import { Hash, List, Form } from '../code/cast'
 import DATA from './data.json'
 
 const FFMPEG_TIME_PATTERN =
   /|\d{2}:\d{2}:\d{2}(?:\.\d{3})|\d{2}:\d{2}(?:\.\d{3})|\d{2}(?:\.\d{3})/
 
+export const something_with_enum: Form = {
+  form: 'form',
+  link: {
+    list: { list: true, take: ['foo', 'bar'] },
+    item: { take: ['hello-world'] },
+  },
+}
+
 export const data_hash: Hash = {
   bond: {
-    form: 'form' as const,
-    link: {
-      intraFrameOnly: { like: 'boolean' },
-      label: { like: 'string' },
-      lossless: { like: 'boolean' },
-      lossy: { like: 'boolean' },
-      supportsDecoding: { like: 'boolean' },
-      supportsEncoding: { like: 'boolean' },
-      type: { like: 'string' },
-    },
+    intraFrameOnly: { like: 'boolean' },
+    label: { like: 'string' },
+    lossless: { like: 'boolean' },
+    lossy: { like: 'boolean' },
+    supportsDecoding: { like: 'boolean' },
+    supportsEncoding: { like: 'boolean' },
+    type: { like: 'string' },
   },
   form: 'hash' as const,
   hash: DATA as Record<string, any>,
@@ -48,11 +53,6 @@ export const test_union: Form = {
     { like: 'remove_audio_from_video_with_ffmpeg' },
     { like: 'remove_audio_from_video_with_ffmpeg_using_file_paths' },
   ],
-}
-
-export const test_union_enum: Form = {
-  form: 'form',
-  case: ['foo', 'bar'],
 }
 
 export const add_audio_to_video_with_ffmpeg_using_file_paths: Form = {

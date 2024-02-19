@@ -10,7 +10,8 @@ import {
 import _ from 'lodash'
 
 const TYPE: Record<string, string> = {
-  ArrayBuffer: 'z.instanceof(ArrayBuffer)',
+  array_buffer: 'z.instanceof(ArrayBuffer)',
+  blob: 'z.instanceof(Blob)',
   boolean: 'z.boolean()',
   decimal: 'z.number()',
   integer: 'z.number().int()',
@@ -142,6 +143,7 @@ export function make_form({
   }
 
   make_link_list({
+    name,
     form,
     mesh,
     leak,
@@ -185,7 +187,9 @@ export function make_link_list({
   form,
   mesh,
   leak,
+  name,
 }: {
+  name: string
   form: Form | FormLinkMesh
   mesh: Mesh
   leak?: boolean
@@ -277,6 +281,7 @@ export function make_link_list({
       } else if (link.link) {
         list.push(`  ${name}: ${oS}${aS}z.object({`)
         make_link_list({
+          name,
           form: link as FormLinkMesh,
           mesh,
           leak,
@@ -284,6 +289,16 @@ export function make_link_list({
           list.push(`  ${line}`)
         })
         list.push(`})${l}${aE}${oE},`)
+      } else if (link.take) {
+        if (link.take.length === 1) {
+          list.push(`  ${name}: ${oS}${aS}z.literal(`)
+          list.push(`    ${JSON.stringify(link.take[0])}`)
+          list.push(`)${l}${aE}${oE},`)
+        } else {
+          list.push(`  ${name}: ${oS}${aS}z.enum(`)
+          list.push(`    ${JSON.stringify(link.take)}`)
+          list.push(`)${l}${aE}${oE},`)
+        }
       }
     }
   } else if ('case' in form) {
@@ -292,14 +307,15 @@ export function make_link_list({
     const formCase = form.case as Array<FormLike>
 
     formCase.forEach(item => {
-      if (typeof item === 'object' && 'like' in item) {
-        formList.push(`z.lazy(() => ${item.like}Model)`)
+      let type = TYPE[item.like]
+      const r = item.test
+        ? `.refine(TEST('${name}', code.${item.test}.test))`
+        : ''
+      if (type) {
+        formList.push(`${type}${r}`)
       } else {
-        if (typeof item === 'string') {
-          baseList.push(`'${item}'`)
-        } else {
-          baseList.push(item)
-        }
+        type = `${toPascalCase(item.like as string)}Model`
+        formList.push(`z.lazy(() => ${type})${r}`)
       }
     })
 
