@@ -1,14 +1,15 @@
 import { RefinementCtx } from 'zod'
 
-export type Load = {
-  test: string
-  mesh: Mesh
+export type Load = Base & {
+  testLink: string
+  baseLink: string
 }
 
 export type FormBond = string | number | boolean | null
 
 export type FormBase = {
   form: 'form'
+  file?: string
   save?: boolean
   test?: (bond: any, link?: any) => boolean
   note?: string
@@ -39,7 +40,14 @@ export type FormBaseLink = FormBase & {
 
 export type Form = FormBaseCase | FormBaseFuse | FormBaseLink
 
-export type Mesh = Record<string, Form | Hash | List | Test | Make>
+export type MeshHash = Record<string, Form | Hash | List | Test | Make>
+
+export type NameHash = Record<string, string>
+
+export type Base = {
+  mesh: MeshHash
+  name: NameHash
+}
 
 export type FormLinkMesh = Record<string, FormLink>
 
@@ -78,6 +86,7 @@ export type FormLink = {
 
 export type Hash = {
   form: 'hash'
+  file?: string
   hash: Record<string, any>
   link?: string
   bond: FormLinkMesh
@@ -85,16 +94,19 @@ export type Hash = {
 
 export type List = {
   form: 'list'
+  file?: string
   list: Array<any>
 }
 
 export type Test = {
   form: 'test'
+  file?: string
   test: (bond: any, name: string) => boolean | string | TestBack
 }
 
 export type Make = {
   form: 'make'
+  file?: string
   make: (bond: any, ctx: RefinementCtx, name: string) => any
 }
 

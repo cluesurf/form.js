@@ -3,14 +3,37 @@ import * as test from './test'
 import make from '../make'
 import fs from 'fs'
 import { convertObjectKeyCase } from '../host'
+import path from 'path'
 
-make({ mesh: { ...form, ...test }, test: '~/test/test' }).then(
-  ({ tree }) => {
-    fs.writeFileSync('tmp/cast.ts', tree.cast as string)
-    fs.writeFileSync('tmp/take.ts', tree.take as string)
-    fs.writeFileSync('tmp/index.ts', tree.base as string)
-  },
-)
+const NAME = {
+  html_div_element: 'HTMLDivElement',
+}
+
+const HOLD = {
+  save: {},
+  load: {},
+}
+
+make({
+  name: NAME,
+  mesh: { ...form, ...test },
+  testLink: '~/test/test',
+  baseLink: `~/test/hold`,
+  ...HOLD,
+}).then(tree => {
+  for (const name in tree.cast) {
+    const link = name.replace('~', '.')
+    const base = path.dirname(link)
+    fs.mkdirSync(base, { recursive: true })
+    fs.writeFileSync(`${link}.ts`, tree.cast[name] as string)
+  }
+  for (const name in tree.take) {
+    const link = name.replace('~', '.')
+    const base = path.dirname(link)
+    fs.mkdirSync(base, { recursive: true })
+    fs.writeFileSync(`${link}.ts`, tree.take[name] as string)
+  }
+})
 
 console.log(
   convertObjectKeyCase(

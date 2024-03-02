@@ -1,17 +1,16 @@
 import { toPascalCase } from '~/code/tool.js'
 import {
+  Base,
   Form,
   FormLike,
   FormLinkMesh,
   Hash,
   List,
-  Mesh,
 } from '~/code/cast.js'
 import _ from 'lodash'
+import { Hold } from './cast'
 
 const TYPE: Record<string, string> = {
-  array_buffer: 'z.instanceof(ArrayBuffer)',
-  blob: 'z.instanceof(Blob)',
   boolean: 'z.boolean()',
   decimal: 'z.number()',
   integer: 'z.number().int()',
@@ -23,57 +22,89 @@ const TYPE: Record<string, string> = {
   natural_number: 'z.number().int().gte(0)',
 }
 
-export default function make(code: string, mesh: Mesh) {
-  const list: Array<string> = []
+export default function make(
+  baseLink: string,
+  testLink: string,
+  base: Base,
+  hold: Hold,
+) {
+  const hash: Record<string, Array<string>> = {}
 
-  list.push(`import { z } from 'zod'`)
-  list.push(`import * as Cast from './cast.js'`)
+  for (const name in base.mesh) {
+    const site = base.mesh[name]
+    if (!site) {
+      continue
+    }
 
-  list.push(`import { MAKE, TEST } from '@termsurf/form'`)
-  list.push(`import * as code from '${code}'`)
+    const file = `${baseLink}/${site.file ?? 'base'}/take`
 
-  for (const name in mesh) {
-    const site = mesh[name]
-    if (site) {
-      switch (site.form) {
-        case 'form':
-          list.push(``)
-          make_form({ form: site, mesh, name }).forEach(line => {
-            list.push(line)
-          })
-          break
-        case 'test':
-          // make_test({ mesh, name, test: site }).forEach(line => {
-          //   list.push(line)
-          // })
-          break
-        case 'hash':
-          list.push(``)
-          make_hash({ hash: site, mesh, name }).forEach(line => {
-            list.push(line)
-          })
-          break
-        case 'list':
-          list.push(``)
-          make_list({ list: site, mesh, name }).forEach(line => {
-            list.push(line)
-          })
-          break
-      }
+    if (!hash[file]) {
+      const list = (hash[file] ??= [])
+
+      list.push(`import { z } from 'zod'`)
+      list.push(`import { MAKE, TEST } from '@termsurf/form'`)
+      list.push(`import * as code from '${testLink}'`)
+
+      list.push(``)
+    }
+
+    const list = hash[file]!
+
+    switch (site.form) {
+      case 'form':
+        list.push(``)
+        make_form({
+          form: site,
+          base,
+          name,
+          file,
+          hold,
+        }).forEach(line => {
+          list.push(line)
+        })
+        break
+      case 'hash':
+        list.push(``)
+        make_hash({
+          hash: site,
+          base,
+          name,
+          file,
+          hold,
+        }).forEach(line => {
+          list.push(line)
+        })
+        break
+      case 'list':
+        list.push(``)
+        make_list({
+          list: site,
+          base,
+          name,
+          file,
+          hold,
+        }).forEach(line => {
+          list.push(line)
+        })
+        break
     }
   }
 
-  return list
+  return hash
 }
 
 export function make_hash({
   name,
   hash,
-  mesh,
+  base,
+  file,
+  hold,
 }: {
   name: string
   hash: Hash
-  mesh: Mesh
+  base: Base
+  file: string
+  hold: Hold
 }) {
   const list: Array<string> = []
 
@@ -83,8 +114,19 @@ export function make_hash({
   if (hash.link) {
     //
   } else {
+    const load = (hold.load[file] ??= {})
+
+    const typeNameKey = `${typeName}Key`
+    const typeNameKeyModel = `${typeName}KeyModel`
+    const TYPE_NAME_KEY = `${TYPE_NAME}_KEY`
+
+    load[typeNameKey] = true
+    load[TYPE_NAME_KEY] = true
+
+    hold.save[typeNameKeyModel] = file
+
     list.push(
-      `export const ${typeName}KeyModel: z.ZodType<Cast.${typeName}Key> = z.enum(Cast.${TYPE_NAME}_KEY)`,
+      `export const ${typeNameKeyModel}: z.ZodType<${typeNameKey}> = z.enum(${TYPE_NAME_KEY})`,
     )
   }
 
@@ -94,19 +136,32 @@ export function make_hash({
 export function make_list({
   name,
   list,
-  mesh,
+  base,
+  file,
+  hold,
 }: {
   name: string
   list: List
-  mesh: Mesh
+  base: Base
+  file: string
+  hold: Hold
 }) {
   const text: Array<string> = []
 
   const typeName = toPascalCase(name)
   const TYPE_NAME = _.snakeCase(name).toUpperCase()
 
+  const load = (hold.load[file] ??= {})
+
+  const typeNameModel = `${typeName}Model`
+
+  load[typeName] = true
+  load[TYPE_NAME] = true
+
+  hold.save[typeNameModel] = file
+
   text.push(
-    `export const ${typeName}Model: z.ZodType<Cast.${typeName}> = z.enum(Cast.${TYPE_NAME})`,
+    `export const ${typeNameModel}: z.ZodType<${typeName}> = z.enum(${TYPE_NAME})`,
   )
 
   return text
@@ -115,38 +170,56 @@ export function make_list({
 export function make_form({
   name,
   form,
-  mesh,
+  base,
+  file,
+  hold,
 }: {
   name: string
   form: Form
-  mesh: Mesh
+  base: Base
+  file: string
+  hold: Hold
 }) {
   const list: Array<string> = []
 
   const typeName = toPascalCase(name)
   const leak = 'leak' in form && form.leak
-  const load = 'load' in form && form.load
+
+  const load = (hold.load[file] ??= {})
+  load[typeName] = true
+
+  const typeModelName = `${typeName}Model`
 
   if ('link' in form) {
-    const base = form.base
-      ? `(${toPascalCase(
-          form.base,
-        )}Model as z.ZodObject<z.ZodRawShape>).extend(`
-      : 'z.object('
+    let base
+    if (form.base) {
+      const baseModelName = `${toPascalCase(form.base)}Model`
+      load[baseModelName] = true
+      base = `(${baseModelName} as z.ZodObject<z.ZodRawShape>).extend(`
+    } else {
+      base = 'z.object('
+    }
+
+    hold.save[typeModelName] = file
+
     list.push(
-      `export const ${typeName}Model: z.ZodType<Cast.${typeName}> = ${base}{`,
+      `export const ${typeModelName}: z.ZodType<${typeName}> = ${base}{`,
     )
   } else {
+    hold.save[typeModelName] = file
+
     list.push(
-      `export const ${typeName}Model: z.ZodType<Cast.${typeName}> = `,
+      `export const ${typeModelName}: z.ZodType<${typeName}> = `,
     )
   }
 
   make_link_list({
     name,
     form,
-    mesh,
+    base,
     leak,
+    file,
+    hold,
   }).forEach(line => {
     list.push(`  ${line}`)
   })
@@ -171,13 +244,13 @@ export function make_form({
 
   // list.push(``)
   // list.push(
-  //   `export function load${typeName}(source: any): Cast.${typeName} {`,
+  //   `export function load${typeName}(source: any): ${typeName} {`,
   // )
   // list.push(`  let x = source`)
   // link.forEach(l => {
   //   list.push(`  x = ${l}Model.parse(x)`)
   // })
-  // list.push(`  return x as Cast.${typeName}`)
+  // list.push(`  return x as ${typeName}`)
   // list.push(`}`)
 
   return list
@@ -185,16 +258,21 @@ export function make_form({
 
 export function make_link_list({
   form,
-  mesh,
+  base,
   leak,
   name,
+  file,
+  hold,
 }: {
   name: string
   form: Form | FormLinkMesh
-  mesh: Mesh
+  base: Base
   leak?: boolean
+  file: string
+  hold: Hold
 }) {
   const list: Array<string> = []
+  const load = (hold.load[file] ??= {})
 
   if ('link' in form) {
     for (const name in form.link) {
@@ -219,10 +297,25 @@ export function make_link_list({
         if (type) {
           list.push(`  ${name}: ${oS}${aS}${type}${r}${aE}${oE}${f},`)
         } else {
-          type = `${toPascalCase(link.like as string)}Model${l}`
-          list.push(
-            `  ${name}: ${oS}${aS}z.lazy(() => ${type})${r}${f}${aE}${oE},`,
-          )
+          const linkLikeModelName = `${toPascalCase(
+            link.like as string,
+          )}Model`
+
+          if (base.mesh[link.like] || hold.save[linkLikeModelName]) {
+            type = `${linkLikeModelName}${l}`
+            load[linkLikeModelName] = true
+            list.push(
+              `  ${name}: ${oS}${aS}z.lazy(() => ${type})${r}${f}${aE}${oE},`,
+            )
+          } else {
+            type = `z.instanceof(${findAndLinkName({
+              like: link.like as string,
+              base,
+              file,
+              hold,
+            })})`
+            list.push(`  ${name}: ${oS}${aS}${type}${r}${aE}${oE}${f},`)
+          }
         }
       } else if (link.case) {
         if (Array.isArray(link.case)) {
@@ -237,7 +330,18 @@ export function make_link_list({
                 like_case.push(`${type}${r}`)
               } else {
                 type = `${toPascalCase(c.like as string)}Model`
-                like_case.push(`z.lazy(() => ${type})${r}`)
+                if (base.mesh[c.like] || hold.save[type]) {
+                  load[type] = true
+                  like_case.push(`z.lazy(() => ${type})${r}`)
+                } else {
+                  type = `z.instanceof(${findAndLinkName({
+                    like: c.like as string,
+                    base,
+                    file,
+                    hold,
+                  })})`
+                  like_case.push(`${type}${r}`)
+                }
               }
             }
           })
@@ -269,7 +373,18 @@ export function make_link_list({
               like_fuse.push(`${type}${r}`)
             } else {
               type = `${toPascalCase(c.like as string)}Model`
-              like_fuse.push(`z.lazy(() => ${type})${r}`)
+              if (base.mesh[c.like] || hold.save[type]) {
+                load[type] = true
+                like_fuse.push(`z.lazy(() => ${type})${r}`)
+              } else {
+                type = `z.instanceof(${findAndLinkName({
+                  like: c.like as string,
+                  base,
+                  file,
+                  hold,
+                })})`
+                like_fuse.push(`${type}${r}`)
+              }
             }
           }
         })
@@ -283,8 +398,10 @@ export function make_link_list({
         make_link_list({
           name,
           form: link as FormLinkMesh,
-          mesh,
+          base,
           leak,
+          file,
+          hold,
         }).forEach(line => {
           list.push(`  ${line}`)
         })
@@ -315,7 +432,18 @@ export function make_link_list({
         formList.push(`${type}${r}`)
       } else {
         type = `${toPascalCase(item.like as string)}Model`
-        formList.push(`z.lazy(() => ${type})${r}`)
+        if (base.mesh[item.like] || hold.save[type]) {
+          load[type] = true
+          formList.push(`z.lazy(() => ${type})${r}`)
+        } else {
+          type = `z.instanceof(${findAndLinkName({
+            like: item.like as string,
+            base,
+            file,
+            hold,
+          })})`
+          formList.push(`${type}${r}`)
+        }
       }
     })
 
@@ -338,7 +466,9 @@ export function make_link_list({
     const fuse = form.fuse as Array<FormLike>
 
     fuse.forEach(item => {
-      formList.push(`z.lazy(() => ${item.like}Model)`)
+      const itemModelName = `${item.like}Model`
+      load[itemModelName] = true
+      formList.push(`z.lazy(() => ${itemModelName})`)
     })
 
     let formSite = `z.intersection([${formList.join(', ')}])`
@@ -346,4 +476,34 @@ export function make_link_list({
   }
 
   return list
+}
+
+function findAndLinkName({
+  like,
+  base,
+  file,
+  hold,
+}: {
+  like: string
+  base: Base
+  file: string
+  hold: Hold
+}): string {
+  const type = TYPE[like]
+  if (typeof type === 'string') {
+    return type
+  }
+
+  const name = base.name[like]
+
+  if (typeof name === 'string') {
+    return name
+  }
+
+  const headName = toPascalCase(like)
+
+  const load = (hold.load[file] ??= {})
+  load[headName] = true
+
+  return headName
 }
