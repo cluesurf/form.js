@@ -22,31 +22,18 @@ const TYPE: Record<string, string> = {
   natural_number: 'z.number().int().gte(0)',
 }
 
-export default function make(
-  baseLink: string,
-  testLink: string,
-  base: Base,
-  hold: Hold,
-) {
+export default function make(baseLink: string, base: Base, hold: Hold) {
   const hash: Record<string, Array<string>> = {}
 
-  for (const name in base.mesh) {
-    const site = base.mesh[name]
+  for (const name in base.link) {
+    const site = base.link[name]
     if (!site) {
       continue
     }
 
     const file = `${baseLink}/${site.file ?? 'base'}/take`
 
-    if (!hash[file]) {
-      const list = (hash[file] ??= [])
-
-      list.push(`import { z } from 'zod'`)
-      list.push(`import { MAKE, TEST } from '@termsurf/form'`)
-      list.push(`import * as code from '${testLink}'`)
-
-      list.push(``)
-    }
+    hash[file] ??= []
 
     const list = hash[file]!
 
@@ -63,18 +50,17 @@ export default function make(
           list.push(line)
         })
         break
-      case 'hash':
-        list.push(``)
-        make_hash({
-          hash: site,
-          base,
-          name,
-          file,
-          hold,
-        }).forEach(line => {
-          list.push(line)
-        })
-        break
+      // case 'hash':
+      //   make_hash({
+      //     hash: site,
+      //     base,
+      //     name,
+      //     file,
+      //     hold,
+      //   }).forEach(line => {
+      //     list.push(line)
+      //   })
+      //   break
       case 'list':
         list.push(``)
         make_list({
@@ -117,14 +103,15 @@ export function make_hash({
     const load = (hold.load[file] ??= {})
 
     const typeNameKey = `${typeName}Key`
-    const typeNameKeyModel = `${typeName}KeyModel`
+    const typeNameKeyModel = `${typeName}KeyResolver`
     const TYPE_NAME_KEY = `${TYPE_NAME}_KEY`
 
     load[typeNameKey] = true
     load[TYPE_NAME_KEY] = true
 
-    hold.save[typeNameKeyModel] = file
+    hold.save[typeNameKeyModel] ??= file
 
+    list.push(``)
     list.push(
       `export const ${typeNameKeyModel}: z.ZodType<${typeNameKey}> = z.enum(${TYPE_NAME_KEY})`,
     )
@@ -149,19 +136,28 @@ export function make_list({
   const text: Array<string> = []
 
   const typeName = toPascalCase(name)
-  const TYPE_NAME = _.snakeCase(name).toUpperCase()
+  const TYPE_NAME = _.kebabCase(name)
 
   const load = (hold.load[file] ??= {})
 
-  const typeNameModel = `${typeName}Model`
+  const typeNameModel = `${typeName}`
 
   load[typeName] = true
-  load[TYPE_NAME] = true
 
-  hold.save[typeNameModel] = file
+  hold.save[`${typeNameModel}Resolver`] ??= file
+
+  text.push(`let ${typeNameModel}Model: z.ZodType<${typeName}>`)
+  text.push(``)
+
+  console.log(`save`, TYPE_NAME)
 
   text.push(
-    `export const ${typeNameModel}: z.ZodType<${typeName}> = z.enum(${TYPE_NAME})`,
+    `export const ${typeNameModel}Resolver = () => {`,
+    `  if (!${typeNameModel}Model) {`,
+    `    ${typeNameModel}Model = z.enum(LOAD('${TYPE_NAME}') as readonly [string, ...string[]]) as z.ZodType<${typeName}>`,
+    `  }`,
+    `  return ${typeNameModel}Model!`,
+    `}`,
   )
 
   return text
@@ -188,28 +184,38 @@ export function make_form({
   const load = (hold.load[file] ??= {})
   load[typeName] = true
 
+  const typeResolverName = `${typeName}Resolver`
   const typeModelName = `${typeName}Model`
 
   if ('link' in form) {
     let base
     if (form.base) {
-      const baseModelName = `${toPascalCase(form.base)}Model`
-      load[baseModelName] = true
-      base = `(${baseModelName} as z.ZodObject<z.ZodRawShape>).extend(`
+      const baseResolverName = `${toPascalCase(form.base)}Resolver`
+      load[baseResolverName] = true
+      // base = `(${baseResolverName} as z.ZodObject<z.ZodRawShape>).extend(`
+      base = `(${baseResolverName}() as any).extend(`
     } else {
       base = 'z.object('
     }
 
-    hold.save[typeModelName] = file
+    hold.save[typeResolverName] ??= file
 
+    list.push(`let ${typeModelName}: z.ZodType<${typeName}>`)
+    list.push(``)
     list.push(
-      `export const ${typeModelName}: z.ZodType<${typeName}> = ${base}{`,
+      `export const ${typeResolverName} = (): z.ZodType<${typeName}> => {`,
+      `  if (!${typeModelName}) {`,
+      `    ${typeModelName} = (${base}{`,
     )
   } else {
-    hold.save[typeModelName] = file
+    hold.save[typeResolverName] ??= file
 
+    list.push(`let ${typeModelName}: z.ZodType<${typeName}>`)
+    list.push(``)
     list.push(
-      `export const ${typeModelName}: z.ZodType<${typeName}> = `,
+      `export const ${typeResolverName} = (): z.ZodType<${typeName}> => {`,
+      `  if (!${typeModelName}) {`,
+      `    ${typeModelName} =`,
     )
   }
 
@@ -221,18 +227,22 @@ export function make_form({
     file,
     hold,
   }).forEach(line => {
-    list.push(`  ${line}`)
+    list.push(`      ${line}`)
   })
 
   if ('link' in form) {
-    list.push(`})`)
+    list.push(`    }) as z.ZodType<${typeName}>)`)
     if (form.make) {
-      list.push(`.transform(MAKE('${name}', code.${form.make}.make))`)
+      list.push(
+        `    .transform(MAKE('${name}', code.${form.make}.make))`,
+      )
     }
     if (leak) {
-      list.push(`.passthrough()`)
+      list.push(`    .passthrough()`)
     }
   }
+
+  list.push(`  }`, `  return ${typeModelName}!`, `}`)
 
   // const link: Array<string> = []
 
@@ -299,13 +309,18 @@ export function make_link_list({
         } else {
           const linkLikeModelName = `${toPascalCase(
             link.like as string,
-          )}Model`
+          )}Resolver`
 
-          if (base.mesh[link.like] || hold.save[linkLikeModelName]) {
-            type = `${linkLikeModelName}${l}`
+          if (base.mesh[link.like]) {
+            const meshForm = base.mesh[link.like]
+            if (meshForm?.form === 'list') {
+              type = `${linkLikeModelName}()`
+            } else {
+              type = `${linkLikeModelName}()${l}`
+            }
             load[linkLikeModelName] = true
             list.push(
-              `  ${name}: ${oS}${aS}z.lazy(() => ${type})${r}${f}${aE}${oE},`,
+              `  ${name}: ${oS}${aS}z.lazy(() => ${type})${r}${aE}${oE}${f},`,
             )
           } else {
             type = `z.instanceof(${findAndLinkName({
@@ -329,10 +344,10 @@ export function make_link_list({
               if (type) {
                 like_case.push(`${type}${r}`)
               } else {
-                type = `${toPascalCase(c.like as string)}Model`
-                if (base.mesh[c.like] || hold.save[type]) {
+                type = `${toPascalCase(c.like as string)}Resolver`
+                if (base.mesh[c.like]) {
                   load[type] = true
-                  like_case.push(`z.lazy(() => ${type})${r}`)
+                  like_case.push(`z.lazy(() => ${type}())${r}`)
                 } else {
                   type = `z.instanceof(${findAndLinkName({
                     like: c.like as string,
@@ -372,10 +387,10 @@ export function make_link_list({
             if (type) {
               like_fuse.push(`${type}${r}`)
             } else {
-              type = `${toPascalCase(c.like as string)}Model`
-              if (base.mesh[c.like] || hold.save[type]) {
+              type = `${toPascalCase(c.like as string)}Resolver`
+              if (base.mesh[c.like]) {
                 load[type] = true
-                like_fuse.push(`z.lazy(() => ${type})${r}`)
+                like_fuse.push(`z.lazy(() => ${type}())${r}`)
               } else {
                 type = `z.instanceof(${findAndLinkName({
                   like: c.like as string,
@@ -431,10 +446,10 @@ export function make_link_list({
       if (type) {
         formList.push(`${type}${r}`)
       } else {
-        type = `${toPascalCase(item.like as string)}Model`
-        if (base.mesh[item.like] || hold.save[type]) {
+        type = `${toPascalCase(item.like as string)}Resolver`
+        if (base.mesh[item.like]) {
           load[type] = true
-          formList.push(`z.lazy(() => ${type})${r}`)
+          formList.push(`z.lazy(() => ${type}())${r}`)
         } else {
           type = `z.instanceof(${findAndLinkName({
             like: item.like as string,
@@ -466,9 +481,9 @@ export function make_link_list({
     const fuse = form.fuse as Array<FormLike>
 
     fuse.forEach(item => {
-      const itemModelName = `${item.like}Model`
+      const itemModelName = `${item.like}Resolver`
       load[itemModelName] = true
-      formList.push(`z.lazy(() => ${itemModelName})`)
+      formList.push(`z.lazy(() => ${itemModelName}())`)
     })
 
     let formSite = `z.intersection([${formList.join(', ')}])`

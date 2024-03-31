@@ -6,11 +6,14 @@ import {
   Hash,
   List,
   Base,
+  Read,
+  ReadBase,
 } from '~/code/cast.js'
 import _ from 'lodash'
 
 const TYPE: Record<string, string> = {
   boolean: 'boolean',
+  number: 'number',
   decimal: 'number',
   integer: 'number',
   natural_number: 'number',
@@ -33,24 +36,19 @@ export type Load = Record<string, Record<string, boolean>>
 export default function make(baseLink: string, base: Base, hold: Hold) {
   const hash: Record<string, Array<string>> = {}
 
-  for (const name in base.mesh) {
-    const site = base.mesh[name]
+  for (const name in base.link) {
+    const site = base.link[name]
     if (site) {
       const file = `${baseLink}/${site.file ?? 'base'}/cast`
 
       hold.load[file] ??= {}
 
-      if (!hash[file]) {
-        const list = (hash[file] ??= [])
-
-        list.push(`import _ from 'lodash'`)
-        list.push(``)
-      }
+      hash[file] ??= []
     }
   }
 
-  for (const name in base.mesh) {
-    const site = base.mesh[name]
+  for (const name in base.link) {
+    const site = base.link[name]
     if (!site) {
       continue
     }
@@ -66,6 +64,13 @@ export default function make(baseLink: string, base: Base, hold: Hold) {
     switch (site.form) {
       case 'form':
         make_form({ form: site, base, name, hold, file }).forEach(
+          line => {
+            list.push(line)
+          },
+        )
+        break
+      case 'read':
+        make_read({ read: site, base, name, hold, file }).forEach(
           line => {
             list.push(line)
           },
@@ -119,10 +124,10 @@ export function make_form({
     } else {
       base = ``
     }
-    hold.save[formName] = file
+    hold.save[formName] ??= file
     list.push(`export type ${formName} = ${base}{`)
   } else if ('case' in form || 'fuse' in form) {
-    hold.save[formName] = file
+    hold.save[formName] ??= file
     list.push(`export type ${formName} =`)
   }
 
@@ -142,7 +147,7 @@ export function make_form({
   if (form.save && 'link' in form) {
     const linkName = _.snakeCase(name).toUpperCase()
 
-    hold.save[linkName] = file
+    hold.save[linkName] ??= file
 
     list.push(``)
     list.push(`export const ${linkName} =`)
@@ -174,6 +179,155 @@ export function make_form({
   return list
 }
 
+export function make_read({
+  name,
+  read,
+  base,
+  hold,
+  file,
+}: {
+  name: string
+  read: Read
+  base: Base
+  hold: Hold
+  file: string
+}) {
+  const list: Array<string> = []
+  const form = base.mesh[read.like]
+
+  if (form && form.form === 'form') {
+    const [tree] = make_read_link({
+      name,
+      line: name,
+      read,
+      form,
+      base,
+      hold,
+      file,
+    })
+    tree.forEach(line => {
+      list.push(`  ${line}`)
+    })
+  }
+
+  return list
+}
+
+export function make_read_link({
+  name,
+  line,
+  read,
+  base,
+  form,
+  hold,
+  file,
+}: {
+  name: string
+  line: string
+  read: ReadBase
+  base: Base
+  form: Form
+  hold: Hold
+  file: string
+}): [Array<string>, string, string] {
+  const treeBase: Array<string> = []
+  const treeLock: Array<string> = []
+  const tree: Array<string> = []
+  const listBase: Array<string> = []
+  const listLock: Array<string> = []
+  const formNameItem = toPascalCase(read.list ? `${line}_item` : line)
+  hold.save[formNameItem] ??= file
+  const formName = toPascalCase(line)
+
+  treeBase.push(``)
+  treeLock.push(``)
+
+  if (read.list) {
+    hold.save[formName] ??= file
+
+    treeBase.push(`export type ${formName} = {`)
+    treeLock.push(`export type Locked${formName} = {`)
+
+    if (read.size) {
+      treeBase.push(`  size?: number`)
+      treeLock.push(`  size: number`)
+    }
+
+    treeBase.push(`  list?: Array<${formNameItem}>`)
+    treeLock.push(`  list: Array<Locked${formNameItem}>`)
+
+    treeBase.push(`}`)
+    treeLock.push(`}`)
+  }
+
+  listBase.push(`export type ${formNameItem} = {`)
+  listLock.push(`export type Locked${formNameItem} = {`)
+
+  if (read) {
+    if (read.tree) {
+      listBase.push(`    ${name}?: Array<${formNameItem}>`)
+      listLock.push(`    ${name}: Array<Locked${formNameItem}>`)
+    }
+
+    if (read.base) {
+      listBase.push(`    ${name}?: ${formNameItem}`)
+      listLock.push(`    ${name}?: Locked${formNameItem}`)
+    }
+
+    if (form && 'link' in form && form.link) {
+      for (const linkName in read.link) {
+        const link = read.link[linkName]
+        const twinFormLink = form.link[linkName]
+        const opt = twinFormLink?.need === false ? '?' : ''
+        const isSimple = Boolean(
+          twinFormLink?.like && twinFormLink.like in TYPE,
+        )
+
+        if (!isSimple) {
+          const twinForm = base.mesh[twinFormLink?.like ?? '']
+          if (typeof link === 'object' && twinForm?.form === 'form') {
+            const [nestTree, nestBase, nestLock] = make_read_link({
+              name: linkName,
+              line: [line, linkName].join('_'),
+              read: link,
+              base,
+              form: twinForm,
+              hold,
+              file,
+            })
+            listBase.push(`    ${linkName}?: ${nestBase}`)
+            listLock.push(`    ${linkName}${opt}: ${nestLock}`)
+            treeBase.push(...nestTree)
+          } else if (twinForm?.form === 'list') {
+            const type = toPascalCase(twinFormLink.like as string)
+            listBase.push(`    ${linkName}?: ${type}`)
+            listLock.push(`    ${linkName}${opt}: ${type}`)
+          }
+        } else {
+          const type = TYPE[twinFormLink?.like ?? '']
+          listBase.push(`    ${linkName}?: ${type}`)
+          listLock.push(`    ${linkName}${opt}: ${type}`)
+        }
+      }
+    }
+  }
+
+  listBase.push(`}`)
+  listLock.push(`}`)
+
+  const list = [...listBase, '', ...listLock]
+
+  treeBase.push(...list)
+
+  tree.push(...treeBase, ...treeLock)
+
+  if (read.list) {
+    return [tree, formName, `Locked${formName}`]
+  } else {
+    return [tree, formNameItem, `Locked${formNameItem}`]
+  }
+}
+
 export function make_hash({
   name,
   hash,
@@ -201,8 +355,8 @@ export function make_hash({
   const typeName = toPascalCase(name)
   const TYPE_NAME = _.snakeCase(name).toUpperCase()
 
-  hold.save[typeName] = file
-  hold.save[TYPE_NAME] = file
+  hold.save[typeName] ??= file
+  hold.save[TYPE_NAME] ??= file
 
   if (hash.link) {
     const linkTypeName = toPascalCase(hash.link)
@@ -213,22 +367,13 @@ export function make_hash({
     )
   } else {
     const keyList = Object.keys(hash.hash)
-    const TYPE_NAME_KEY = `${TYPE_NAME}_KEY`
     const typeNameKey = `${typeName}Key`
 
-    hold.save[TYPE_NAME_KEY] = file
-    hold.save[typeNameKey] = file
-
-    list.push(
-      `export const ${TYPE_NAME_KEY} = ` +
-        JSON.stringify(keyList, null, 2) +
-        ' as const',
-    )
+    hold.save[typeNameKey] ??= file
 
     list.push(``)
-    list.push(
-      `export type ${typeNameKey} = (typeof ${TYPE_NAME_KEY})[number]`,
-    )
+    list.push(`export type ${typeNameKey} =
+${keyList.map(key => `  | '${key}'`).join('\n')}`)
 
     const typeValueName = `${typeName}Value`
     const typeKeyName = `${typeName}Key`
@@ -239,12 +384,6 @@ export function make_hash({
       `export type ${typeName} = Record<${typeKeyName}, ${typeValueName}>`,
     )
   }
-
-  list.push(``)
-  list.push(
-    `export const ${TYPE_NAME}: ${typeName} = ` +
-      JSON.stringify(hash.hash, null, 2),
-  )
 
   return list
 }
@@ -265,19 +404,12 @@ export function make_list({
   const text: Array<string> = []
 
   const typeName = toPascalCase(name)
-  const TYPE_NAME = _.snakeCase(name).toUpperCase()
 
-  hold.save[typeName] = file
-  hold.save[TYPE_NAME] = file
-
-  text.push(
-    `export const ${TYPE_NAME} = ` +
-      JSON.stringify(list.list, null, 2) +
-      ' as const',
-  )
+  hold.save[typeName] ??= file
 
   text.push(``)
-  text.push(`export type ${typeName} = (typeof ${TYPE_NAME})[number]`)
+  text.push(`export type ${typeName} =
+${list.list.map(key => `  | '${key}'`).join('\n')}`)
 
   return text
 }

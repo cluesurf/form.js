@@ -1,4 +1,4 @@
-import { Hash, List, Form } from '../code/cast'
+import { Hash, List, Form, Read } from '../code/cast'
 import DATA from './data.json'
 
 const FFMPEG_TIME_PATTERN =
@@ -104,7 +104,7 @@ export const convert_video_to_audio_with_ffmpeg: Form = {
   },
 }
 
-export const convert_video_with_ffmpeg_base: Form = {
+const convert_video_with_ffmpeg_base: Form = {
   form: 'form',
   link: {
     audioBitRate: { like: 'integer' },
@@ -136,8 +136,9 @@ export const convert_video_with_ffmpeg_base: Form = {
   },
 }
 
-export const convert_video_with_ffmpeg_using_file_paths: Form = {
+export const convert_video_with_ffmpeg_using_file_node_paths: Form = {
   form: 'form',
+  leak: true,
   link: {
     inputPath: { like: 'string' },
     outputPath: { like: 'string' },
@@ -151,5 +152,88 @@ export const convert_video_with_ffmpeg: Form = {
     input: { like: 'array_buffer' },
     output: { like: 'array_buffer' },
     ...convert_video_with_ffmpeg_base.link,
+  },
+}
+
+export const top: Form = {
+  form: 'form',
+  link: {
+    id: { like: 'string' },
+    subtitle_codec: { like: 'ffmpeg_subtitle_codec' },
+    children: { like: 'top', list: true },
+    parent: { like: 'top', need: false },
+    nested: { like: 'top_nested', need: false },
+    again: { like: 'top_nested', list: true },
+    leaf: { like: 'string', need: false },
+  },
+}
+
+export const top_nested: Form = {
+  form: 'form',
+  link: {
+    id: { like: 'string' },
+    bond: { like: 'integer' },
+  },
+}
+
+export const top_read_one: Read = {
+  form: 'read',
+  like: 'top',
+  link: {
+    id: true,
+    subtitle_codec: true,
+    nested: {
+      link: {
+        id: true,
+        bond: true,
+      },
+    },
+    again: {
+      size: true,
+      list: true,
+      link: {
+        id: true,
+        bond: true,
+      },
+    },
+  },
+}
+
+export const top_read_list: Read = {
+  form: 'read',
+  like: 'top',
+  list: true,
+  size: true,
+  link: {
+    id: true,
+    nested: {
+      link: {
+        id: true,
+        bond: true,
+      },
+    },
+    again: {
+      size: true,
+      list: true,
+      link: {
+        id: true,
+        bond: true,
+      },
+    },
+    children: {
+      list: true,
+      tree: true,
+      link: {
+        id: true,
+        leaf: true,
+      },
+    },
+    parent: {
+      base: true,
+      link: {
+        id: true,
+        leaf: true,
+      },
+    },
   },
 }

@@ -6,6 +6,19 @@ export function toPascalCase(text: string) {
   return _.startCase(_.camelCase(text)).replace(/ /g, '')
 }
 
+const base: Record<string, any> = {}
+
+export function save(name: string, bond: any) {
+  base[name] = bond
+}
+
+export function LOAD(name: string) {
+  if (!(name in base)) {
+    throw new Error(`No '${name}' found in @termsurf/form`)
+  }
+  return base[name]
+}
+
 export function MAKE(
   name: string,
   fn: (bond: any, ctx: RefinementCtx, name: string) => any,

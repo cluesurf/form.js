@@ -40,12 +40,16 @@ export type FormBaseLink = FormBase & {
 
 export type Form = FormBaseCase | FormBaseFuse | FormBaseLink
 
-export type MeshHash = Record<string, Form | Hash | List | Test | Make>
+export type BaseHash = Record<
+  string,
+  Form | Hash | List | Test | Make | Read
+>
 
 export type NameHash = Record<string, string>
 
 export type Base = {
-  mesh: MeshHash
+  mesh: BaseHash
+  link: BaseHash
   name: NameHash
 }
 
@@ -115,3 +119,37 @@ export type TestBack = {
   path?: Array<string>
   params?: any
 }
+
+export type Read = {
+  form: 'read'
+  file?: string
+  like: string
+} & ReadBase
+
+export type ReadBase = {
+  list?: boolean
+  tree?: boolean // traverse down the tree branches
+  base?: boolean // traverse up the tree branch
+  size?: boolean
+  sort?: Array<Sort>
+  need?: boolean
+  link?: Record<string, ReadLink>
+}
+
+export type ReadLink = ReadBase | boolean
+
+export type Sort = {
+  link: string
+  side: 'rise' | 'fall'
+}
+
+export type Back = Record<string, any>
+
+export type BackList<T extends Back> = {
+  size?: number
+  list: Array<T>
+}
+
+export type DeepRequired<T> = {
+  [K in keyof T]: DeepRequired<T[K]>
+} & Required<T>
