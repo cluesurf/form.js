@@ -1,4 +1,5 @@
 import { toPascalCase } from '~/code/tool.js'
+import snakeCase from 'lodash/snakeCase'
 import {
   Base,
   Form,
@@ -6,9 +7,8 @@ import {
   FormLinkMesh,
   Hash,
   List,
-} from '~/code/cast.js'
-import _ from 'lodash'
-import { Hold } from './cast'
+} from '~/code/type.js'
+import { Hold } from './type'
 
 const TYPE: Record<string, string> = {
   boolean: 'z.boolean()',
@@ -22,6 +22,10 @@ const TYPE: Record<string, string> = {
   natural_number: 'z.number().int().gte(0)',
 }
 
+/**
+ * Make parsers in the `~/code/type/parser/index.ts` file.
+ */
+
 export default function make(baseLink: string, base: Base, hold: Hold) {
   const hash: Record<string, Array<string>> = {}
 
@@ -31,7 +35,7 @@ export default function make(baseLink: string, base: Base, hold: Hold) {
       continue
     }
 
-    const file = `${baseLink}/${site.file ?? 'base'}/take`
+    const file = `${baseLink}/parser/${site.file ?? 'index'}`
 
     hash[file] ??= []
 
@@ -95,7 +99,7 @@ export function make_hash({
   const list: Array<string> = []
 
   const typeName = toPascalCase(name)
-  const TYPE_NAME = _.snakeCase(name).toUpperCase()
+  const TYPE_NAME = snakeCase(name).toUpperCase()
 
   if (hash.link) {
     //
@@ -103,13 +107,13 @@ export function make_hash({
     const load = (hold.load[file] ??= {})
 
     const typeNameKey = `${typeName}Key`
-    const typeNameKeyModel = `${typeName}KeyResolver`
+    const typeNameKeyModel = `${typeName}KeyParser`
     const TYPE_NAME_KEY = `${TYPE_NAME}_KEY`
 
     load[typeNameKey] = true
     load[TYPE_NAME_KEY] = true
 
-    hold.save[typeNameKeyModel] ??= file
+    hold.save[typeNameKeyModel] ??= { file }
 
     list.push(``)
     list.push(
@@ -136,7 +140,7 @@ export function make_list({
   const text: Array<string> = []
 
   const typeName = toPascalCase(name)
-  const TYPE_NAME = _.kebabCase(name)
+  const TYPE_NAME = snakeCase(name)
 
   const load = (hold.load[file] ??= {})
 
@@ -144,15 +148,13 @@ export function make_list({
 
   load[typeName] = true
 
-  hold.save[`${typeNameModel}Resolver`] ??= file
+  hold.save[`${typeNameModel}Parser`] ??= { file }
 
   text.push(`let ${typeNameModel}Model: z.ZodType<${typeName}>`)
   text.push(``)
 
-  console.log(`save`, TYPE_NAME)
-
   text.push(
-    `export const ${typeNameModel}Resolver = () => {`,
+    `export const ${typeNameModel}Parser = () => {`,
     `  if (!${typeNameModel}Model) {`,
     `    ${typeNameModel}Model = z.enum(LOAD('${TYPE_NAME}') as readonly [string, ...string[]]) as z.ZodType<${typeName}>`,
     `  }`,
@@ -184,36 +186,36 @@ export function make_form({
   const load = (hold.load[file] ??= {})
   load[typeName] = true
 
-  const typeResolverName = `${typeName}Resolver`
+  const typeParserName = `${typeName}Parser`
   const typeModelName = `${typeName}Model`
 
   if ('link' in form) {
     let base
     if (form.base) {
-      const baseResolverName = `${toPascalCase(form.base)}Resolver`
-      load[baseResolverName] = true
-      // base = `(${baseResolverName} as z.ZodObject<z.ZodRawShape>).extend(`
-      base = `(${baseResolverName}() as any).extend(`
+      const baseParserName = `${toPascalCase(form.base)}Parser`
+      load[baseParserName] = true
+      // base = `(${baseParserName} as z.ZodObject<z.ZodRawShape>).extend(`
+      base = `(${baseParserName}() as any).extend(`
     } else {
       base = 'z.object('
     }
 
-    hold.save[typeResolverName] ??= file
+    hold.save[typeParserName] ??= { file }
 
     list.push(`let ${typeModelName}: z.ZodType<${typeName}>`)
     list.push(``)
     list.push(
-      `export const ${typeResolverName} = (): z.ZodType<${typeName}> => {`,
+      `export const ${typeParserName} = (): z.ZodType<${typeName}> => {`,
       `  if (!${typeModelName}) {`,
       `    ${typeModelName} = (${base}{`,
     )
   } else {
-    hold.save[typeResolverName] ??= file
+    hold.save[typeParserName] ??= { file }
 
     list.push(`let ${typeModelName}: z.ZodType<${typeName}>`)
     list.push(``)
     list.push(
-      `export const ${typeResolverName} = (): z.ZodType<${typeName}> => {`,
+      `export const ${typeParserName} = (): z.ZodType<${typeName}> => {`,
       `  if (!${typeModelName}) {`,
       `    ${typeModelName} =`,
     )
@@ -309,7 +311,7 @@ export function make_link_list({
         } else {
           const linkLikeModelName = `${toPascalCase(
             link.like as string,
-          )}Resolver`
+          )}Parser`
 
           if (base.mesh[link.like]) {
             const meshForm = base.mesh[link.like]
@@ -344,7 +346,7 @@ export function make_link_list({
               if (type) {
                 like_case.push(`${type}${r}`)
               } else {
-                type = `${toPascalCase(c.like as string)}Resolver`
+                type = `${toPascalCase(c.like as string)}Parser`
                 if (base.mesh[c.like]) {
                   load[type] = true
                   like_case.push(`z.lazy(() => ${type}())${r}`)
@@ -387,7 +389,7 @@ export function make_link_list({
             if (type) {
               like_fuse.push(`${type}${r}`)
             } else {
-              type = `${toPascalCase(c.like as string)}Resolver`
+              type = `${toPascalCase(c.like as string)}Parser`
               if (base.mesh[c.like]) {
                 load[type] = true
                 like_fuse.push(`z.lazy(() => ${type}())${r}`)
@@ -446,7 +448,7 @@ export function make_link_list({
       if (type) {
         formList.push(`${type}${r}`)
       } else {
-        type = `${toPascalCase(item.like as string)}Resolver`
+        type = `${toPascalCase(item.like as string)}Parser`
         if (base.mesh[item.like]) {
           load[type] = true
           formList.push(`z.lazy(() => ${type}())${r}`)
@@ -481,7 +483,7 @@ export function make_link_list({
     const fuse = form.fuse as Array<FormLike>
 
     fuse.forEach(item => {
-      const itemModelName = `${item.like}Resolver`
+      const itemModelName = `${item.like}Parser`
       load[itemModelName] = true
       formList.push(`z.lazy(() => ${itemModelName}())`)
     })

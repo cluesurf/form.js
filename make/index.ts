@@ -1,8 +1,8 @@
 import love_code from '@termsurf/love-code'
-import make_cast, { Hold } from './cast'
-import make_take from './take'
-import make_base from './base'
-import { Load } from '~/code/cast'
+import make_type, { Hold } from './type'
+import make_parser from './parser'
+import make_data from './data'
+import { Load } from '~/code/type'
 
 export type Make = Load & Hold
 
@@ -11,38 +11,40 @@ export default async function make(make: Make) {
 
   const hold = { load, save }
 
-  const cast_list_hash = make_cast(baseLink, baseMesh, hold)
-  const take_list_hash = make_take(baseLink, baseMesh, hold)
-  const base_list_hash = make_base(baseLink, baseMesh, hold)
+  const type_list_hash = {
+    ...make_type(baseLink, baseMesh, hold, true),
+    ...make_type(`${baseLink}/optional`, baseMesh, hold, false),
+  }
+  const parser_list_hash = make_parser(baseLink, baseMesh, hold)
+  const data_list_hash = make_data(baseLink, baseMesh, hold)
 
   const cast: Record<string, string> = {}
   const take: Record<string, string> = {}
   const base: Record<string, string> = {}
 
-  for (const file in cast_list_hash) {
-    const list = cast_list_hash[file]
+  for (const file in type_list_hash) {
+    const list = type_list_hash[file]
     if (list?.length) {
-      const base = [
-        `import { BackList } from '@termsurf/form'`,
-        ``,
+      const castList = [
+        `import merge from 'lodash/merge'`,
         ...makeLoadList(hold, file),
         ...list,
       ]
-      cast[file] = await love_code(base.join('\n'))
+      cast[file] = await love_code(castList.join('\n'))
     }
   }
 
-  for (const file in base_list_hash) {
-    const list = base_list_hash[file]
+  for (const file in data_list_hash) {
+    const list = data_list_hash[file]
     if (list?.length) {
-      const baseList = [...makeLoadList(hold, file), ...list]
+      const castList = [...makeLoadList(hold, file), ...list]
 
-      base[file] = await love_code(baseList.join('\n'))
+      base[file] = await love_code(castList.join('\n'))
     }
   }
 
-  for (const file in take_list_hash) {
-    const list = take_list_hash[file]
+  for (const file in parser_list_hash) {
+    const list = parser_list_hash[file]
     if (list?.length) {
       const base = [
         `import { z } from 'zod'`,
@@ -66,7 +68,8 @@ function makeLoadList(hold: Hold, file: string) {
   const load = hold.load![file]!
 
   for (const name in load) {
-    const fileLink = hold.save[name]
+    const holdFile = hold.save[name]
+    const fileLink = holdFile?.file
     if (!fileLink || file === fileLink) {
       continue
     }

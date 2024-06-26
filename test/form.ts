@@ -1,8 +1,5 @@
-import { Hash, List, Form, Read } from '../code/cast'
+import { Hash, List, Form } from '../code/type'
 import DATA from './data.json'
-
-const FFMPEG_TIME_PATTERN =
-  /|\d{2}:\d{2}:\d{2}(?:\.\d{3})|\d{2}:\d{2}(?:\.\d{3})|\d{2}(?:\.\d{3})/
 
 export const ffmpeg_audio_codec: List = {
   form: 'list',
@@ -30,9 +27,9 @@ export const something_with_enum: Form = {
   },
 }
 
-export const data_hash: Hash = {
-  file: 'data',
-  bond: {
+export const data_form: Form = {
+  form: 'form',
+  link: {
     intraFrameOnly: { like: 'boolean' },
     label: { like: 'string' },
     lossless: { like: 'boolean' },
@@ -41,6 +38,11 @@ export const data_hash: Hash = {
     supportsEncoding: { like: 'boolean' },
     type: { like: 'string' },
   },
+}
+
+export const data_hash: Hash = {
+  file: 'data',
+  bond: { like: 'data_form' },
   form: 'hash',
   hash: DATA as Record<string, any>,
 }
@@ -176,64 +178,460 @@ export const top_nested: Form = {
   },
 }
 
-export const top_read_one: Read = {
-  form: 'read',
-  like: 'top',
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+export const script: Form = {
+  form: 'form',
   link: {
-    id: true,
-    subtitle_codec: true,
-    nested: {
+    title: { like: 'string' },
+    id: { like: 'string', size: 32 },
+    slug: { like: 'string' },
+    code: { like: 'string', need: false },
+    is_rtl: { like: 'boolean', need: false, fall: false },
+    is_vertical: { like: 'boolean', need: false, fall: false },
+    category: {
+      like: 'string',
+      take: ['alphabet', 'abugida', 'syllabary', 'logographic'],
+    },
+  },
+}
+
+export const language: Form = {
+  form: 'form',
+  link: {
+    id: { like: 'string', size: 32 },
+    // code: { like: 'string' },
+    slug: { like: 'string' },
+    iso639_1: { like: 'string' },
+    iso639_2: { like: 'string' },
+    iso639_3: { like: 'string' },
+    category: { like: 'string' },
+    title: { like: 'string' },
+    flow_count: { like: 'integer', fall: 0 },
+    // flow_code_seed: { like: 'integer', fall: 0 },
+    flows: { list: true, like: 'language_flow', back: 'language' },
+    is_natural: { like: 'boolean', need: false },
+    is_constructed: { like: 'boolean', need: false },
+  },
+}
+
+export const language_flow_example: Form = {
+  form: 'form',
+  link: {
+    id: { like: 'string', size: 32 },
+    sense: { like: 'language_flow_sense' },
+    sentence: { like: 'language_highlighted_sentence' },
+  },
+}
+
+export const language_highlighted_sentence: Form = {
+  form: 'form',
+  link: {
+    id: { like: 'string', size: 32 },
+    text: { like: 'string' },
+    highlighted_indices: { like: 'json' },
+  },
+}
+
+export const language_flow_list: Form = {
+  form: 'form',
+  link: {
+    id: { like: 'string', size: 32 },
+    slug: { like: 'string' },
+    title: { like: 'string' },
+    items: {
+      like: 'language_flow',
+      list: true,
+      back: 'list',
+    },
+  },
+}
+
+export const language_flow_translation_list: Form = {
+  form: 'form',
+  link: {
+    id: { like: 'string', size: 32 },
+    slug: { like: 'string' },
+    title: { like: 'string' },
+    source: {
       link: {
-        id: true,
-        bond: true,
+        language: { like: 'language' },
+        script: { like: 'language' },
       },
     },
-    again: {
-      size: true,
-      list: true,
+    target: {
       link: {
-        id: true,
-        bond: true,
+        language: { like: 'language' },
+        script: { like: 'language' },
+      },
+    },
+    items: {
+      like: 'language_flow_translation_list_item',
+      list: true,
+      back: 'list',
+    },
+  },
+}
+
+export const language_flow_translation_list_item: Form = {
+  form: 'form',
+  link: {
+    id: { like: 'string', size: 32 },
+    list: { like: 'language_flow_translation_list' },
+    translation: { like: 'language_flow_translation' },
+    position: {
+      need: false,
+      link: {
+        row: { like: 'integer', need: false, fall: 0 },
+        column: { like: 'integer', need: false, fall: 0 },
       },
     },
   },
 }
 
-export const top_read_list: Read = {
-  form: 'read',
-  like: 'top',
-  list: true,
-  size: true,
+export const language_flow_translation: Form = {
+  form: 'form',
   link: {
-    id: true,
-    nested: {
+    id: { like: 'string', size: 32 },
+    source: { like: 'language_flow_variant' },
+    target: { like: 'language_flow_variant' },
+  },
+}
+
+export const language_flow_sense: Form = {
+  form: 'form',
+  link: {
+    id: { like: 'string', size: 32 },
+    variant: { like: 'language_flow_variant' },
+    parent: { like: 'language_flow_sense', need: false },
+    position: { like: 'integer', need: false, fall: 0 },
+  },
+}
+
+export const language_flow_gloss: Form = {
+  form: 'form',
+  link: {
+    id: { like: 'string', size: 32 },
+    variant: { like: 'language_flow_variant' },
+    fragments: { like: 'language_flow_gloss_fragment', list: true },
+  },
+}
+
+export const language_flow_gloss_fragment: Form = {
+  form: 'form',
+  link: {
+    id: { like: 'string', size: 32 },
+    text: { like: 'string' },
+    symbols: { like: 'string' },
+  },
+}
+
+export const audio_recording: Form = {
+  form: 'form',
+  link: {
+    citation: { like: 'citation' },
+    file: { like: 'audio_file' },
+  },
+}
+
+export const language_flow_pronunciation: Form = {
+  form: 'form',
+  link: {
+    id: { like: 'string', size: 32 },
+    script: { like: 'script' },
+    system: { like: 'transliteration_system' },
+    variant: { like: 'language_flow_variant' },
+    text: { like: 'language_flow_variant' },
+    position: { like: 'integer', need: false, fall: 0 },
+    syllable: {
+      need: false,
       link: {
-        id: true,
-        bond: true,
+        count: { like: 'integer', need: false },
+        mark: { like: 'json', need: false },
+        is_exact: { like: 'boolean', need: false },
       },
     },
-    again: {
-      size: true,
-      list: true,
+    recordings: { like: 'audio_recording', list: true },
+  },
+}
+
+export const language_flow_transcription: Form = {
+  form: 'form',
+  link: {
+    id: { like: 'string', size: 32 },
+    script: { like: 'script' },
+    system: { like: 'transliteration_system' },
+    variant: { like: 'language_flow_variant' },
+    text: { like: 'string' },
+    position: { like: 'integer', need: false, fall: 0 },
+    is_phonetic: { like: 'boolean', need: false, fall: false },
+    is_canonical: { like: 'boolean', need: false },
+  },
+}
+
+export const transliteration_system: Form = {
+  form: 'form',
+  link: {
+    id: { like: 'string', size: 32 },
+    slug: { like: 'string' },
+    title: { like: 'string' },
+    source: {
       link: {
-        id: true,
-        bond: true,
+        language: { like: 'language' },
+        script: { like: 'language' },
       },
     },
-    children: {
-      list: true,
-      tree: true,
+    target: {
       link: {
-        id: true,
-        leaf: true,
+        language: { like: 'language' },
+        script: { like: 'language' },
       },
     },
-    parent: {
-      base: true,
-      link: {
-        id: true,
-        leaf: true,
-      },
+  },
+}
+
+export const language_flow_element: Form = {
+  form: 'form',
+  link: {
+    id: { like: 'string', size: 32 },
+    derivation: { like: 'language_flow_derivation' },
+    source: { like: 'language_flow_variant' },
+  },
+}
+
+export const language_flow_derivation: Form = {
+  form: 'form',
+  link: {
+    id: { like: 'string', size: 32 },
+    base: { like: 'language_flow_variant' },
+    category: { like: 'string' },
+  },
+}
+
+export const language_flow_variant_structure: List = {
+  form: 'list',
+  list: ['task', 'object', 'design', 'other', 'unknown'],
+}
+
+export const language_flow_variant_role: List = {
+  form: 'list',
+  list: [
+    'noun',
+    'verb',
+    'coverb',
+    'adjective',
+    'pronoun',
+    'preposition',
+    'suffix',
+    'infix',
+    'prefix',
+    'adverb',
+    'participle',
+    'particle',
+    'article',
+    'determiner',
+    'numeral',
+    'conjunction',
+    'interjection',
+    'auxiliary_verb',
+    'clitic',
+    'marker',
+    'copula',
+    'gerund',
+    'acronym',
+    'demonstrative',
+  ],
+}
+
+export const language_flow_variant_tense: List = {
+  form: 'list',
+  list: ['past', 'present', 'future', 'nonpast', 'nonfuture'],
+}
+
+export const language_flow_variant_relativity: List = {
+  form: 'list',
+  list: ['relative', 'absolute'],
+}
+
+export const language_flow_variant_concreteness: List = {
+  form: 'list',
+  list: ['abstract', 'concrete'],
+}
+
+export const language_flow_variant_continuity: List = {
+  form: 'list',
+  list: [
+    'bounded',
+    'ongoing',
+    'repetitive',
+    'continuous',
+    'fixed',
+    'evolving',
+  ],
+}
+
+export const language_flow_variant: Form = {
+  form: 'form',
+  link: {
+    id: { like: 'string', size: 32 },
+    flow: { like: 'language_flow', need: false },
+    context: { like: 'integer', need: false },
+    // - is_derived: If it is a derived word from a base.
+    is_derived: { like: 'boolean', need: false },
+    // - is_compound: If it is a compound word.
+    is_compound: { like: 'boolean', need: false },
+    // - is_base: In agglutinative languages, the base word.
+    is_base: { like: 'boolean', need: false },
+    // If the concept can't be broken down further (create is, creates isn't, creationism is).
+    is_anchor: { like: 'boolean', need: false },
+    // - is_word: If it's a word.
+    is_word: { like: 'boolean', need: false },
+    // - is_multi_word: If it's a term which is more than one word.
+    is_multi_word: { like: 'boolean', need: false },
+    // - is_affix
+    is_affix: { like: 'boolean', need: false },
+    is_prefix: { like: 'boolean', need: false },
+    is_suffix: { like: 'boolean', need: false },
+    is_infix: { like: 'boolean', need: false },
+    is_circumfix: { like: 'boolean', need: false },
+    // - is_prefix
+    // - has_prefix
+    // - has_suffix
+    // - is_flow: Appears in the dictionary word list.
+    is_flow: { like: 'boolean', need: false },
+    // - is_verse
+    // - is_paragraph
+    // - is_sentence
+    // - is_phrase
+    // - is_idiom
+    // - is_punctuation
+    is_punctuation: { like: 'boolean', need: false },
+    punctuation_type: { like: 'string', need: false },
+    // - punctuation = stop, break, start_enclosure, etc..
+    // - is_function (function words)
+    is_function: { like: 'boolean', need: false },
+    // - is_content (content words)
+    is_content: { like: 'boolean', need: false },
+    // - is_reference (determiner is is_reference + is_modifier)
+    is_reference: { like: 'boolean', need: false },
+    // - is_quantity (many/few = is_reference,is_modifier,is_quantity)
+    is_quantity: { like: 'boolean', need: false },
+    // - is_numeral
+    is_numeral: { like: 'boolean', need: false },
+    // - is_action: Verbs
+    is_action: { like: 'boolean', need: false },
+    // - is_object: Nouns
+    is_object: { like: 'boolean', need: false },
+    // - is_modifier
+    is_modifier: { like: 'boolean', need: false },
+    // - is_feature # adjective / adverb
+    is_feature: { like: 'boolean', need: false },
+    // - modify: action | object
+    modifies: { like: 'string', need: false },
+    // - person: 1, 2, 3
+    // - is_sentence_subject (I)
+    is_sentence_subject: { like: 'boolean', need: false },
+    // - is_sentence_object (me)
+    is_sentence_object: { like: 'boolean', need: false },
+    // - is_substitute (I = is_substitute,is_object,is_sentence_subject)
+    is_substitute: { like: 'boolean', need: false },
+    // - is_possessive (my = is_substitute,is_object,is_possessive)
+    is_possessive: { like: 'boolean', need: false },
+    // - is_dependent (modal verbs)
+    is_dependent: { like: 'boolean', need: false },
+    // - voice
+    // - is_manner
+    // - manner: likelihood, possibility, ability, permission, request,
+    //   obligation, capacity, suggestion
+    //   - could (is_manner,is_modifier,modify=action,is_action)
+    // - syntactic_role: subject, predicate, object, complement, adjunct
+    // - semantic_role: agent, patient, experiencer, instrument, etc.:
+    //   Capturing the role entities play in events or states.
+    // - degree (comparative, superlative): For adjectives and adverbs.
+    // - politeness, formality, emphasis, hesitation
+    // - formal, informal, technical, colloquial
+    //   - formality
+    //   - usage: technical, colloquial, literary
+    //   - is_archaic
+    // - is_metaphor
+    // - is_simile
+    // - is_interjection
+    // - is_filler
+    // - is_link (conjunction/disjunction)
+    // - relation
+    //   - kind: similar, opposite, inclusion, containment (synonymy, antonymy,
+    //     hyponymy, meronymy)
+    // - concreteness, animacy, countability
+    // - is_negation
+    // - is_plural, is_singular, is_dual
+    // - is_transfer (transitive=true, intransitive=false)
+    // - aspect: perfective, imperfective, progressive
+    // - is_irregular
+    // - Pronoun Features: type: personal, demonstrative, interrogative,
+    //   relative, etc.
+    // - is_reflective (reflexive pronouns)
+    // - clause_type: main, subordinate, relative, coordinate, etc.
+    // - is_topic: Marks the topic of a sentence or clause.
+    // - is_focus: Marks the focus or emphasis.
+    // - speech_act: question, command, statement, etc.
+    // - attitude: sarcasm, irony, sincerity, etc.
+    // - is_obsolete: marks words no longer in common use.
+    // - is_error: marks erroneous usage in the text.
+    // - correction: provides the correct form or usage.
+    // - is_spatial
+    // - is_temporal
+    // - is_movement (directional)
+    // - is_technique (by, with)
+    // - is_causal
+    // - is_invariable (doesn't ever change form)
+    // - is_flexible_position: For languages where the position (pre or post)
+    //   of the adposition can vary.
+    // - is_phrase_component
+    // - is_principle_part
+    // - flow: link to the flow where this appears
+
+    // await db.schema
+    //   .createTable('language_flow_rhyme')
+    //   .addColumn('id', 'uuid', c => c.primaryKey())
+    //   .addColumn('source__id', 'uuid', c =>
+    //     c.references('language_flow_tone.id').notNull(),
+    //   )
+    //   .addColumn('target__id', 'uuid', c =>
+    //     c.references('language_flow_tone.id').notNull(),
+    //   )
+    //   .execute()
+
+    has_predictable_meaning: { like: 'boolean', need: false },
+    structure: {
+      like: 'language_flow_variant_structure',
+      need: false,
     },
+    role: { like: 'language_flow_variant_role', need: false },
+    arity: { like: 'integer', need: false },
+    tense: { like: 'language_flow_variant_tense', need: false },
+    relativity: {
+      like: 'language_flow_variant_relativity',
+      need: false,
+    },
+    concreteness: {
+      like: 'language_flow_variant_concreteness',
+      need: false,
+    },
+    continuity: {
+      like: 'language_flow_variant_continuity',
+      need: false,
+    },
+  },
+}
+
+export const language_flow: Form = {
+  form: 'form',
+  link: {
+    id: { like: 'string', size: 32 },
+    slug: { like: 'string' },
+    text: { like: 'string' },
+    language: { like: 'language' },
+    variants: { like: 'language_flow_variant', list: true },
   },
 }

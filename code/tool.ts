@@ -1,9 +1,12 @@
-import _ from 'lodash'
-import { TestBack } from './cast.js'
+import startCase from 'lodash/startCase'
+import camelCase from 'lodash/camelCase'
+import snakeCase from 'lodash/snakeCase'
+import isPlainObject from 'lodash/isPlainObject'
+import { TestBack } from './type.js'
 import { RefinementCtx } from 'zod'
 
 export function toPascalCase(text: string) {
-  return _.startCase(_.camelCase(text)).replace(/ /g, '')
+  return startCase(camelCase(text)).replace(/ /g, '')
 }
 
 const base: Record<string, any> = {}
@@ -49,8 +52,8 @@ export function TEST(
 export type StringCase = 'snakeCase' | 'camelCase' | 'pascalCase'
 
 const STRING_CASE: Record<StringCase, (val: string) => string> = {
-  snakeCase: _.snakeCase,
-  camelCase: _.camelCase,
+  snakeCase: snakeCase,
+  camelCase: camelCase,
   pascalCase: toPascalCase,
 }
 
@@ -62,11 +65,11 @@ export function convertObjectKeyCase(
   for (const name in input) {
     let val = input[name]
     if (val) {
-      if (_.isPlainObject(val)) {
+      if (isPlainObject(val)) {
         val = convertObjectKeyCase(val as Record<string, any>, to)
       } else if (Array.isArray(val)) {
         val = val.map(v => {
-          if (_.isPlainObject(v)) {
+          if (isPlainObject(v)) {
             return convertObjectKeyCase(v as Record<string, any>, to)
           }
 
