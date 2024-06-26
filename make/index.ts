@@ -1,8 +1,8 @@
 import love_code from '@termsurf/love-code'
-import make_type, { Hold } from './type'
-import make_parser from './parser'
-import make_data from './data'
-import { Load } from '~/code/type'
+import make_type, { Hold } from './type.js'
+import make_parser from './parser.js'
+import make_data from './data.js'
+import { Load } from '~/code/type.js'
 
 export type Make = Load & Hold
 

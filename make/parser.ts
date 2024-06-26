@@ -1,5 +1,5 @@
 import { toPascalCase } from '~/code/tool.js'
-import snakeCase from 'lodash/snakeCase'
+import snakeCase from 'lodash/snakeCase.js'
 import {
   Base,
   Form,
@@ -8,7 +8,7 @@ import {
   Hash,
   List,
 } from '~/code/type.js'
-import { Hold } from './type'
+import { Hold } from './type.js'
 
 const TYPE: Record<string, string> = {
   boolean: 'z.boolean()',

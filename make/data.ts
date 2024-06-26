@@ -1,7 +1,7 @@
 import { toPascalCase } from '~/code/tool.js'
-import snakeCase from 'lodash/snakeCase'
+import snakeCase from 'lodash/snakeCase.js'
 import { Hash, List, Base } from '~/code/type.js'
-import { Hold } from './type'
+import { Hold } from './type.js'
 
 /**
  * Make lists and hashes (data) in the `~/code/type/data/index.ts` file.

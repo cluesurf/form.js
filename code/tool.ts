@@ -1,7 +1,7 @@
-import startCase from 'lodash/startCase'
-import camelCase from 'lodash/camelCase'
-import snakeCase from 'lodash/snakeCase'
-import isPlainObject from 'lodash/isPlainObject'
+import startCase from 'lodash/startCase.js'
+import camelCase from 'lodash/camelCase.js'
+import snakeCase from 'lodash/snakeCase.js'
+import isPlainObject from 'lodash/isPlainObject.js'
 import { TestBack } from './type.js'
 import { RefinementCtx } from 'zod'
 
