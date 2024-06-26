@@ -79,7 +79,10 @@ export function make_hash({
   const TYPE_NAME = snakeCase(name).toUpperCase()
 
   load[typeName] = true
-  hold.save[TYPE_NAME] ??= { file }
+
+  if (hash.hash) {
+    hold.save[TYPE_NAME] ??= { file }
+  }
 
   if (hash.link) {
   } else {
@@ -98,10 +101,12 @@ export function make_hash({
     list.push(``)
   }
 
-  list.push(
-    `export const ${TYPE_NAME}: ${typeName} = ` +
-      JSON.stringify(hash.hash, null, 2),
-  )
+  if (hash.hash) {
+    list.push(
+      `export const ${TYPE_NAME}: ${typeName} = ` +
+        JSON.stringify(hash.hash, null, 2),
+    )
+  }
 
   return list
 }

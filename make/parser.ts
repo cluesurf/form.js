@@ -233,7 +233,7 @@ export function make_form({
   })
 
   if ('link' in form) {
-    list.push(`    }) as z.ZodType<${typeName}>)`)
+    list.push(`    })`)
     if (form.make) {
       list.push(
         `    .transform(MAKE('${name}', code.${form.make}.make))`,
@@ -242,9 +242,12 @@ export function make_form({
     if (leak) {
       list.push(`    .passthrough()`)
     }
+
+    list.push(`) as z.ZodType<${typeName}>`)
   }
 
-  list.push(`  }`, `  return ${typeModelName}!`, `}`)
+  list.push(`}`)
+  list.push(`  return ${typeModelName}!`, `}`)
 
   // const link: Array<string> = []
 

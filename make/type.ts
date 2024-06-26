@@ -1,5 +1,4 @@
 import { toPascalCase } from '~/code/tool.js'
-import snakeCase from 'lodash/snakeCase'
 import {
   Form,
   FormLike,
