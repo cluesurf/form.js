@@ -1,26 +1,29 @@
 import love_code from '@termsurf/love-code'
-import make_type, { Hold } from './type.js'
-import make_parser from './parser.js'
-import make_data from './data.js'
+import make_types, { Hold } from './types.js'
+import make_parsers from './parsers.js'
+import make_constants from './constants.js'
 import { Load } from '~/code/type.js'
 
 export type Make = Load & Hold
 
-export default async function make(make: Make) {
-  const { testLink, baseLink, load, save, ...baseMesh } = make
+export type MakeBack = {
+  type: Record<string, string>
+  parser: Record<string, string>
+  constant: Record<string, string>
+}
+
+export default async function make(make: Make): Promise<MakeBack> {
+  const { testLink, load, save, ...baseMesh } = make
 
   const hold = { load, save }
 
-  const type_list_hash = {
-    ...make_type(baseLink, baseMesh, hold, true),
-    ...make_type(`${baseLink}/optional`, baseMesh, hold, false),
-  }
-  const parser_list_hash = make_parser(baseLink, baseMesh, hold)
-  const data_list_hash = make_data(baseLink, baseMesh, hold)
+  const type_list_hash = make_types(baseMesh, hold, true)
+  const parser_list_hash = make_parsers(baseMesh, hold)
+  const constant_list_hash = make_constants(baseMesh, hold)
 
-  const cast: Record<string, string> = {}
-  const take: Record<string, string> = {}
-  const base: Record<string, string> = {}
+  const type: Record<string, string> = {}
+  const parser: Record<string, string> = {}
+  const constant: Record<string, string> = {}
 
   for (const file in type_list_hash) {
     const list = type_list_hash[file]
@@ -30,16 +33,16 @@ export default async function make(make: Make) {
         ...makeLoadList(hold, file),
         ...list,
       ]
-      cast[file] = await love_code(castList.join('\n'))
+      type[file] = await love_code(castList.join('\n'))
     }
   }
 
-  for (const file in data_list_hash) {
-    const list = data_list_hash[file]
+  for (const file in constant_list_hash) {
+    const list = constant_list_hash[file]
     if (list?.length) {
       const castList = [...makeLoadList(hold, file), ...list]
 
-      base[file] = await love_code(castList.join('\n'))
+      constant[file] = await love_code(castList.join('\n'))
     }
   }
 
@@ -55,11 +58,11 @@ export default async function make(make: Make) {
         ...list,
       ]
 
-      take[file] = await love_code(base.join('\n'))
+      parser[file] = await love_code(base.join('\n'))
     }
   }
 
-  return { cast, take, base }
+  return { type, parser, constant }
 }
 
 function makeLoadList(hold: Hold, file: string) {

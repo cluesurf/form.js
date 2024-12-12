@@ -3,24 +3,25 @@ import DATA from './data.json'
 
 export const ffmpeg_audio_codec: List = {
   form: 'list',
-  file: 'ffmpeg',
+  save: '~/test/hold/ffmpeg',
   list: ['foo', 'bar'],
 }
 
 export const ffmpeg_subtitle_codec: List = {
   form: 'list',
-  file: 'ffmpeg',
+  save: '~/test/hold/ffmpeg',
   list: ['foo', 'bar'],
 }
 
 export const ffmpeg_video_codec: List = {
   form: 'list',
-  file: 'ffmpeg',
+  save: '~/test/hold/ffmpeg',
   list: ['foo', 'bar'],
 }
 
 export const something_with_enum: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     list: { list: true, take: ['foo', 'bar'] },
     item: { take: ['hello-world'] },
@@ -29,6 +30,7 @@ export const something_with_enum: Form = {
 
 export const data_form: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     intraFrameOnly: { like: 'boolean' },
     label: { like: 'string' },
@@ -41,7 +43,7 @@ export const data_form: Form = {
 }
 
 export const data_hash: Hash = {
-  file: 'data',
+  save: '~/test/hold/data',
   bond: { like: 'data_form' },
   form: 'hash',
   hash: DATA as Record<string, any>,
@@ -49,12 +51,14 @@ export const data_hash: Hash = {
 
 export const ffmpeg_strict_option: List = {
   form: 'list',
+  save: '~/test/hold',
   list: ['very', 'strict', 'normal', 'unofficial', 'experimental'],
 }
 
 export const remove_audio_from_video_with_ffmpeg_using_file_paths: Form =
   {
     form: 'form',
+    save: '~/test/hold',
     link: {
       inputPath: { like: 'string' },
       outputPath: { like: 'string' },
@@ -64,6 +68,7 @@ export const remove_audio_from_video_with_ffmpeg_using_file_paths: Form =
 
 export const remove_audio_from_video_with_ffmpeg: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     input: { like: 'string', note: `The input video bytes.` },
   },
@@ -71,6 +76,7 @@ export const remove_audio_from_video_with_ffmpeg: Form = {
 
 export const test_union: Form = {
   form: 'form',
+  save: '~/test/hold',
   case: [
     { like: 'remove_audio_from_video_with_ffmpeg' },
     { like: 'remove_audio_from_video_with_ffmpeg_using_file_paths' },
@@ -79,6 +85,7 @@ export const test_union: Form = {
 
 export const add_audio_to_video_with_ffmpeg_using_file_paths: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     audioCodec: { base: 'aac', like: 'string' },
     fit: { like: 'boolean' },
@@ -90,6 +97,7 @@ export const add_audio_to_video_with_ffmpeg_using_file_paths: Form = {
 
 export const add_audio_to_video_with_ffmpeg: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     audioCodec: { base: 'aac', like: 'string' },
     fit: { like: 'boolean' },
@@ -100,6 +108,7 @@ export const add_audio_to_video_with_ffmpeg: Form = {
 
 export const convert_video_to_audio_with_ffmpeg: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     inputPath: { like: 'string' },
     outputPath: { like: 'string' },
@@ -108,6 +117,7 @@ export const convert_video_to_audio_with_ffmpeg: Form = {
 
 const convert_video_with_ffmpeg_base: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     audioBitRate: { like: 'integer' },
     audioChannels: { like: 'integer' },
@@ -140,6 +150,7 @@ const convert_video_with_ffmpeg_base: Form = {
 
 export const convert_video_with_ffmpeg_using_file_node_paths: Form = {
   form: 'form',
+  save: '~/test/hold',
   leak: true,
   link: {
     inputPath: { like: 'string' },
@@ -150,6 +161,7 @@ export const convert_video_with_ffmpeg_using_file_node_paths: Form = {
 
 export const convert_video_with_ffmpeg: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     input: { like: 'array_buffer' },
     output: { like: 'array_buffer' },
@@ -159,6 +171,7 @@ export const convert_video_with_ffmpeg: Form = {
 
 export const top: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     id: { like: 'string' },
     subtitle_codec: { like: 'ffmpeg_subtitle_codec' },
@@ -172,6 +185,7 @@ export const top: Form = {
 
 export const top_nested: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     id: { like: 'string' },
     bond: { like: 'integer' },
@@ -183,6 +197,7 @@ export const top_nested: Form = {
 
 export const script: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     title: { like: 'string' },
     id: { like: 'string', size: 32 },
@@ -199,6 +214,7 @@ export const script: Form = {
 
 export const language: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     id: { like: 'string', size: 32 },
     // code: { like: 'string' },
@@ -218,6 +234,7 @@ export const language: Form = {
 
 export const language_flow_example: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     id: { like: 'string', size: 32 },
     sense: { like: 'language_flow_sense' },
@@ -227,6 +244,7 @@ export const language_flow_example: Form = {
 
 export const language_highlighted_sentence: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     id: { like: 'string', size: 32 },
     text: { like: 'string' },
@@ -236,6 +254,7 @@ export const language_highlighted_sentence: Form = {
 
 export const language_flow_list: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     id: { like: 'string', size: 32 },
     slug: { like: 'string' },
@@ -250,6 +269,7 @@ export const language_flow_list: Form = {
 
 export const language_flow_translation_list: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     id: { like: 'string', size: 32 },
     slug: { like: 'string' },
@@ -276,6 +296,7 @@ export const language_flow_translation_list: Form = {
 
 export const language_flow_translation_list_item: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     id: { like: 'string', size: 32 },
     list: { like: 'language_flow_translation_list' },
@@ -292,6 +313,7 @@ export const language_flow_translation_list_item: Form = {
 
 export const language_flow_translation: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     id: { like: 'string', size: 32 },
     source: { like: 'language_flow_variant' },
@@ -301,6 +323,7 @@ export const language_flow_translation: Form = {
 
 export const language_flow_sense: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     id: { like: 'string', size: 32 },
     variant: { like: 'language_flow_variant' },
@@ -311,6 +334,7 @@ export const language_flow_sense: Form = {
 
 export const language_flow_gloss: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     id: { like: 'string', size: 32 },
     variant: { like: 'language_flow_variant' },
@@ -320,6 +344,7 @@ export const language_flow_gloss: Form = {
 
 export const language_flow_gloss_fragment: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     id: { like: 'string', size: 32 },
     text: { like: 'string' },
@@ -329,6 +354,7 @@ export const language_flow_gloss_fragment: Form = {
 
 export const audio_recording: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     citation: { like: 'citation' },
     file: { like: 'audio_file' },
@@ -337,6 +363,7 @@ export const audio_recording: Form = {
 
 export const language_flow_pronunciation: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     id: { like: 'string', size: 32 },
     script: { like: 'script' },
@@ -358,6 +385,7 @@ export const language_flow_pronunciation: Form = {
 
 export const language_flow_transcription: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     id: { like: 'string', size: 32 },
     script: { like: 'script' },
@@ -372,6 +400,7 @@ export const language_flow_transcription: Form = {
 
 export const transliteration_system: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     id: { like: 'string', size: 32 },
     slug: { like: 'string' },
@@ -393,6 +422,7 @@ export const transliteration_system: Form = {
 
 export const language_flow_element: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     id: { like: 'string', size: 32 },
     derivation: { like: 'language_flow_derivation' },
@@ -402,6 +432,7 @@ export const language_flow_element: Form = {
 
 export const language_flow_derivation: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     id: { like: 'string', size: 32 },
     base: { like: 'language_flow_variant' },
@@ -411,11 +442,13 @@ export const language_flow_derivation: Form = {
 
 export const language_flow_variant_structure: List = {
   form: 'list',
+  save: '~/test/hold',
   list: ['task', 'object', 'design', 'other', 'unknown'],
 }
 
 export const language_flow_variant_role: List = {
   form: 'list',
+  save: '~/test/hold',
   list: [
     'noun',
     'verb',
@@ -446,21 +479,25 @@ export const language_flow_variant_role: List = {
 
 export const language_flow_variant_tense: List = {
   form: 'list',
+  save: '~/test/hold',
   list: ['past', 'present', 'future', 'nonpast', 'nonfuture'],
 }
 
 export const language_flow_variant_relativity: List = {
   form: 'list',
+  save: '~/test/hold',
   list: ['relative', 'absolute'],
 }
 
 export const language_flow_variant_concreteness: List = {
   form: 'list',
+  save: '~/test/hold',
   list: ['abstract', 'concrete'],
 }
 
 export const language_flow_variant_continuity: List = {
   form: 'list',
+  save: '~/test/hold',
   list: [
     'bounded',
     'ongoing',
@@ -473,6 +510,7 @@ export const language_flow_variant_continuity: List = {
 
 export const language_flow_variant: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     id: { like: 'string', size: 32 },
     flow: { like: 'language_flow', need: false },
@@ -627,6 +665,7 @@ export const language_flow_variant: Form = {
 
 export const language_flow: Form = {
   form: 'form',
+  save: '~/test/hold',
   link: {
     id: { like: 'string', size: 32 },
     slug: { like: 'string' },

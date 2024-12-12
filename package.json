@@ -1,6 +1,6 @@
 {
   "name": "@cluesurf/form",
-  "version": "0.9.24",
+  "version": "0.1.0",
   "license": "MIT",
   "main": "./host/index.js",
   "type": "module",

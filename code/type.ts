@@ -2,15 +2,13 @@ import { RefinementCtx } from 'zod'
 
 export type Load = Base & {
   testLink: string
-  baseLink: string
 }
 
 export type FormBond = string | number | boolean | null
 
 export type FormBase = {
   form: 'form'
-  file?: string
-  save?: boolean
+  save: string
   test?: (bond: any, link?: any) => boolean
   note?: string
 }
@@ -92,7 +90,7 @@ export type FormLink = {
 
 export type Hash = {
   form: 'hash'
-  file?: string
+  save: string
   hash: Record<string, any>
   link?: string
   bond: FormLike | FormLikeCase
@@ -101,20 +99,20 @@ export type Hash = {
 
 export type List = {
   form: 'list'
-  file?: string
+  save: string
   list: Array<any>
   load?: boolean
 }
 
 export type Test = {
   form: 'test'
-  file?: string
+  save: string
   test: (bond: any, name: string) => boolean | string | TestBack
 }
 
 export type Make = {
   form: 'make'
-  file?: string
+  save: string
   make: (bond: any, ctx: RefinementCtx, name: string) => any
 }
 

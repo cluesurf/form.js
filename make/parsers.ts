@@ -8,7 +8,7 @@ import {
   Hash,
   List,
 } from '~/code/type.js'
-import { Hold } from './type.js'
+import { Hold } from './types.js'
 
 const TYPE: Record<string, string> = {
   boolean: 'z.boolean()',
@@ -26,7 +26,7 @@ const TYPE: Record<string, string> = {
  * Make parsers in the `~/code/type/parser/index.ts` file.
  */
 
-export default function make(baseLink: string, base: Base, hold: Hold) {
+export default function make(base: Base, hold: Hold) {
   const hash: Record<string, Array<string>> = {}
 
   for (const name in base.link) {
@@ -35,7 +35,7 @@ export default function make(baseLink: string, base: Base, hold: Hold) {
       continue
     }
 
-    const file = `${baseLink}/parser/${site.file ?? 'index'}`
+    const file = `${site.save}/parsers`
 
     hash[file] ??= []
 
