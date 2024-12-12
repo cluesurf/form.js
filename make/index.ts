@@ -29,11 +29,7 @@ export default async function make({
   for (const file in type_list_hash) {
     const list = type_list_hash[file]
     if (list?.length) {
-      const castList = [
-        `import merge from 'lodash/merge'`,
-        ...makeLoadList(hold, file),
-        ...list,
-      ]
+      const castList = [...makeLoadList(hold, file), ...list]
       type[file] = await love_code(castList.join('\n'))
     }
   }

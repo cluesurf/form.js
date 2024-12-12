@@ -117,7 +117,7 @@ export function make_hash({
 
     list.push(``)
     list.push(
-      `export const ${typeNameKeyModel}: z.ZodType<${typeNameKey}> = z.enum(${TYPE_NAME_KEY})`,
+      `export const ${typeNameKeyModel}: z.ZodType<${typeNameKey}> = z.enum(${TYPE_NAME_KEY} as [${typeNameKey}, ...${typeNameKey}[]])`,
     )
   }
 

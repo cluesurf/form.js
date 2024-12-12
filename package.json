@@ -1,6 +1,6 @@
 {
   "name": "@cluesurf/form",
-  "version": "0.1.0",
+  "version": "0.1.6",
   "license": "MIT",
   "main": "./host/index.js",
   "type": "module",
@@ -41,9 +41,9 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "@cluesurf/have": "^0.2.0",
-    "@cluesurf/kink": "^0.1.2",
-    "@cluesurf/love-code": "^0.1.10",
+    "@termsurf/have": "^0.2.0",
+    "@termsurf/kink": "^0.1.2",
+    "@termsurf/love-code": "^0.1.10",
     "dayjs": "^1.11.8",
     "lodash": "^4.17.21"
   },
