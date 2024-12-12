@@ -62,13 +62,3 @@ async function make() {
 //     'camelCase',
 //   ),
 // )
-
-function makeMesh(base: BaseHash, test: Test) {
-  const mesh: BaseHash = {}
-  for (const name in base) {
-    if (test(name)) {
-      mesh[name] = base[name]
-    }
-  }
-  return mesh
-}
