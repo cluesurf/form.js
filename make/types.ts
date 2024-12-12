@@ -47,33 +47,20 @@ export type Load = Record<FileName, Record<TypeName, boolean>>
  * Make types in the `~/code/type/index.ts` file.
  */
 
-export default function make(base: Base, hold: Hold, need = false) {
+export default function make(base: Base, hold: Hold, need = true) {
   const hash: Record<string, Array<string>> = {}
 
   for (const name in base.link) {
-    const site = base.link[name]
-    if (site) {
-      const file = `${site.save}/index`
-
-      hold.load[file] ??= {}
-
-      hash[file] ??= []
-    }
+    const site = base.link[name]!
+    const file = `${site.save}/index`
+    hold.load[file] ??= {}
+    hash[file] ??= []
   }
 
   for (const name in base.link) {
-    const site = base.link[name]
-    if (!site) {
-      continue
-    }
-
+    const site = base.link[name]!
     const file = `${site.save}/index`
-
-    const list = hash[file]
-
-    if (!list) {
-      continue
-    }
+    const list = hash[file]!
 
     switch (site.form) {
       case 'form':

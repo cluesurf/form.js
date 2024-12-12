@@ -361,6 +361,14 @@ export const audio_recording: Form = {
   },
 }
 
+export const citation: Form = {
+  form: 'form',
+  save: '~/test/hold',
+  link: {
+    link: { like: 'string' },
+  },
+}
+
 export const language_flow_pronunciation: Form = {
   form: 'form',
   save: '~/test/hold',

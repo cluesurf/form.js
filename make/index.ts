@@ -4,7 +4,7 @@ import make_parsers from './parsers.js'
 import make_constants from './constants.js'
 import { Load } from '~/code/type.js'
 
-export type Make = Load & Hold
+export type Make = Load
 
 export type MakeBack = {
   type: Record<string, string>
@@ -12,12 +12,13 @@ export type MakeBack = {
   constant: Record<string, string>
 }
 
-export default async function make(make: Make): Promise<MakeBack> {
-  const { testLink, load, save, ...baseMesh } = make
+export default async function make({
+  testLink,
+  ...baseMesh
+}: Make): Promise<MakeBack> {
+  const hold: Hold = { load: {}, save: {} }
 
-  const hold = { load, save }
-
-  const type_list_hash = make_types(baseMesh, hold, true)
+  const type_list_hash = make_types(baseMesh, hold)
   const parser_list_hash = make_parsers(baseMesh, hold)
   const constant_list_hash = make_constants(baseMesh, hold)
 
@@ -51,7 +52,7 @@ export default async function make(make: Make): Promise<MakeBack> {
     if (list?.length) {
       const base = [
         `import { z } from 'zod'`,
-        `import { LOAD, MAKE, TEST } from '@termsurf/form'`,
+        `import { LOAD, MAKE, TEST } from '@cluesurf/form'`,
         `import * as code from '${testLink}'`,
         ``,
         ...makeLoadList(hold, file),

@@ -9,74 +9,59 @@ const NAME = {
   html_div_element: 'HTMLDivElement',
 }
 
-const HOLD = {
-  save: {},
-  load: {},
-}
-
-export type Test = (text: string) => boolean
-
 make()
 
 async function make() {
-  await makeForm('base', (text: string) => !text.match(`_node_`))
-  await makeForm('node', (text: string) => !!text.match(`_node_`))
-}
-
-async function makeForm(type: string, test: Test) {
-  const mesh = makeMesh(MESH, test)
   const tree = await makeTree({
     name: NAME,
     mesh: { ...MESH, ...test },
-    link: { ...mesh, ...test },
+    link: { ...MESH, ...test },
     testLink: '~/test/test',
-    baseLink: `~/test/hold/${type}`,
-    ...HOLD,
   })
 
-  for (const name in tree.cast) {
+  for (const name in tree.type) {
     const link = name.replace('~', '.')
     const base = path.dirname(link)
     fs.mkdirSync(base, { recursive: true })
-    fs.writeFileSync(`${link}.ts`, tree.cast[name] as string)
+    fs.writeFileSync(`${link}.ts`, tree.type[name] as string)
   }
 
-  for (const name in tree.take) {
+  for (const name in tree.parser) {
     const link = name.replace('~', '.')
     const base = path.dirname(link)
     fs.mkdirSync(base, { recursive: true })
-    fs.writeFileSync(`${link}.ts`, tree.take[name] as string)
+    fs.writeFileSync(`${link}.ts`, tree.parser[name] as string)
   }
 
-  for (const name in tree.base) {
+  for (const name in tree.constant) {
     const link = name.replace('~', '.')
     const base = path.dirname(link)
     fs.mkdirSync(base, { recursive: true })
-    fs.writeFileSync(`${link}.ts`, tree.base[name] as string)
+    fs.writeFileSync(`${link}.ts`, tree.constant[name] as string)
   }
 }
 
-console.log(
-  convertObjectKeyCase(
-    {
-      FooBar: {
-        helloWorld: true,
-      },
-    },
-    'snakeCase',
-  ),
-)
+// console.log(
+//   convertObjectKeyCase(
+//     {
+//       FooBar: {
+//         helloWorld: true,
+//       },
+//     },
+//     'snakeCase',
+//   ),
+// )
 
-console.log(
-  convertObjectKeyCase(
-    {
-      foo_bar: {
-        hello_world: true,
-      },
-    },
-    'camelCase',
-  ),
-)
+// console.log(
+//   convertObjectKeyCase(
+//     {
+//       foo_bar: {
+//         hello_world: true,
+//       },
+//     },
+//     'camelCase',
+//   ),
+// )
 
 function makeMesh(base: BaseHash, test: Test) {
   const mesh: BaseHash = {}

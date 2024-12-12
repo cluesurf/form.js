@@ -54,17 +54,17 @@ export default function make(base: Base, hold: Hold) {
           list.push(line)
         })
         break
-      // case 'hash':
-      //   make_hash({
-      //     hash: site,
-      //     base,
-      //     name,
-      //     file,
-      //     hold,
-      //   }).forEach(line => {
-      //     list.push(line)
-      //   })
-      //   break
+      case 'hash':
+        make_hash({
+          hash: site,
+          base,
+          name,
+          file,
+          hold,
+        }).forEach(line => {
+          list.push(line)
+        })
+        break
       case 'list':
         list.push(``)
         make_list({

@@ -17,7 +17,7 @@ export function save(name: string, bond: any) {
 
 export function LOAD(name: string) {
   if (!(name in base)) {
-    throw new Error(`No '${name}' found in @termsurf/form`)
+    throw new Error(`No '${name}' found in @cluesurf/form`)
   }
   return base[name]
 }
