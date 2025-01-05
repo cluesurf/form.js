@@ -224,7 +224,11 @@ export const language: Form = {
     iso639_3: { like: 'string' },
     category: { like: 'string' },
     title: { like: 'string' },
-    flow_count: { like: 'integer', fall: 0 },
+    flow_count: {
+      like: 'natural_number',
+      fall: 0,
+      size: { rise_meet: 1, fall_meet: 1000 },
+    },
     // flow_code_seed: { like: 'integer', fall: 0 },
     flows: { list: true, like: 'language_flow', back: 'language' },
     is_natural: { like: 'boolean', need: false },

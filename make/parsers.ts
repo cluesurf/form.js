@@ -19,7 +19,7 @@ const TYPE: Record<string, string> = {
   timestamp: 'z.coerce.date()',
   date: 'z.coerce.date()',
   uuid: 'z.string().uuid()',
-  natural_number: 'z.number().int().gte(0)',
+  natural_number: 'z.number().int()',
 }
 
 /**
@@ -306,11 +306,52 @@ export function make_link_list({
         link.fall != null
           ? `.default(${JSON.stringify(link.fall)})`
           : ''
+
+      let min = ''
+      let max = ''
+
+      if (link.size) {
+        if (link.like === 'natural_number') {
+          if (
+            typeof link.size.rise === 'number' &&
+            link.size.rise > 0
+          ) {
+            min = `.gt(${link.size.rise})`
+          } else if (typeof link.size.rise_meet === 'number') {
+            min = `.gte(${Math.max(link.size.rise_meet as number, 0)})`
+          } else {
+            min = `.gte(0)`
+          }
+
+          if (typeof link.size.fall === 'number') {
+            max = `.lt(${Math.max(link.size.fall as number, 1)})`
+          } else if (typeof link.size.fall_meet === 'number') {
+            max = `.lte(${Math.max(link.size.fall_meet as number, 1)})`
+          }
+        } else {
+          if (typeof link.size.rise === 'number') {
+            min = `.gt(${link.size.rise})`
+          } else if (typeof link.size.rise_meet === 'number') {
+            min = `.gte(${link.size.rise_meet})`
+          }
+
+          if (typeof link.size.fall === 'number') {
+            max = `.lt(${link.size.fall})`
+          } else if (typeof link.size.fall_meet === 'number') {
+            max = `.lte(${link.size.fall_meet})`
+          }
+        }
+      } else if (link.like === 'natural_number') {
+        min = `.gte(0)`
+      }
+
       const l = leak ? `.passthrough()` : ''
       if (typeof link.like === 'string') {
         let type = TYPE[link.like]
         if (type) {
-          list.push(`  ${name}: ${oS}${aS}${type}${r}${aE}${oE}${f},`)
+          list.push(
+            `  ${name}: ${oS}${aS}${type}${min}${max}${r}${aE}${oE}${f},`,
+          )
         } else {
           const linkLikeModelName = `${toPascalCase(
             link.like as string,

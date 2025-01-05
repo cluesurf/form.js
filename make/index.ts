@@ -80,7 +80,7 @@ function makeLoadList(hold: Hold, file: string) {
   for (const file in hash) {
     const list = hash[file]!
 
-    text.push(`import { ${list.sort().join(', ')} } from '${file}.js'`)
+    text.push(`import { ${list.sort().join(', ')} } from '${file}'`)
   }
 
   text.push(``)

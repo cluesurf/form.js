@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
-    "target": "ES6",
+    "module": "commonjs",
+    "target": "ES2015",
     "lib": ["es2020", "dom"],
     "outDir": "host",
     "rootDir": ".",
