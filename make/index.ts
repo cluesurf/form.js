@@ -1,4 +1,4 @@
-import love_code from '@termsurf/love-code'
+import love_code from '@cluesurf/love-code'
 import make_types, { Hold } from './types.js'
 import make_parsers from './parsers.js'
 import make_constants from './constants.js'
@@ -49,7 +49,7 @@ export default async function make({
       const base = [
         `import { z } from 'zod'`,
         `import { LOAD, MAKE, TEST } from '@cluesurf/form'`,
-        `import * as code from '${testLink}'`,
+        `import * as code from '${testLink}.js'`,
         ``,
         ...makeLoadList(hold, file),
         ...list,
@@ -80,7 +80,7 @@ function makeLoadList(hold: Hold, file: string) {
   for (const file in hash) {
     const list = hash[file]!
 
-    text.push(`import { ${list.sort().join(', ')} } from '${file}'`)
+    text.push(`import { ${list.sort().join(', ')} } from '${file}.js'`)
   }
 
   text.push(``)

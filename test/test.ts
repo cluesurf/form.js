@@ -3,6 +3,7 @@ const FFMPEG_TIME_PATTERN =
 
 export const test_time_string = {
   form: 'test' as const,
+  save: '~/test/test',
   test: (bond: string) =>
     !!bond.match(FFMPEG_TIME_PATTERN) ||
     `${name} has an invalid format.`,

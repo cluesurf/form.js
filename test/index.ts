@@ -2,7 +2,6 @@ import * as MESH from './form'
 import * as test from './test'
 import makeTree from '../host/make'
 import fs from 'fs'
-import { BaseHash, convertObjectKeyCase } from '../host'
 import path from 'path'
 
 const NAME = {
