@@ -221,7 +221,7 @@ export function make_form({
     file,
     hold,
   }).forEach(line => {
-    list.push(`  ${line}`)
+    list.push(`${line}`)
   })
 
   if ('link' in form) {
