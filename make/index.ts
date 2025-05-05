@@ -48,7 +48,7 @@ export default async function make({
       const base = [
         `import { z } from 'zod'`,
         `import { LOAD, MAKE, TEST } from '@cluesurf/form'`,
-        `import * as code from '${testLink}.js'`,
+        `import * as code from '${testLink}.ts'`,
         ``,
         ...makeLoadList(hold, file),
         ...list,
@@ -79,7 +79,7 @@ function makeLoadList(hold: Hold, file: string) {
   for (const file in hash) {
     const list = hash[file]!
 
-    text.push(`import { ${list.sort().join(', ')} } from '${file}.js'`)
+    text.push(`import { ${list.sort().join(', ')} } from '${file}.ts'`)
   }
 
   text.push(``)
