@@ -187,7 +187,6 @@ export function make_form({
   load[typeName] = true
 
   const typeParserName = `${typeName}Parser`
-  const typeModelName = `${typeName}Model`
 
   if ('link' in form) {
     let base
@@ -202,15 +201,11 @@ export function make_form({
 
     hold.save[typeParserName] ??= { file }
 
-    list.push(
-      `export const ${typeParserName}: z.ZodType<${typeName}> = ${base}{`,
-    )
+    list.push(`export const ${typeParserName} = ${base}{`)
   } else {
     hold.save[typeParserName] ??= { file }
 
-    list.push(
-      `export const ${typeParserName}: z.ZodType<${typeName}> =`,
-    )
+    list.push(`export const ${typeParserName} =`)
   }
 
   make_link_list({
@@ -235,6 +230,11 @@ export function make_form({
 
     // list.push(`) as z.ZodType<${typeName}>`)
   }
+
+  list.push(``)
+  list.push(
+    `export type ${typeName}Record = z.infer<typeof ${typeParserName}>`,
+  )
 
   // const link: Array<string> = []
 
