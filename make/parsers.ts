@@ -453,16 +453,16 @@ export function make_link_list({
         }).forEach(line => {
           list.push(`  ${line}`)
         })
-        list.push(`})${l}${aE}${oE},`)
+        list.push(`  })${l}${aE}${oE},`)
       } else if (link.take) {
         if (link.take.length === 1) {
           list.push(`  ${name}: ${oS}${aS}z.literal(`)
           list.push(`    ${JSON.stringify(link.take[0])}`)
-          list.push(`)${l}${aE}${oE},`)
+          list.push(`  )${l}${aE}${oE},`)
         } else {
           list.push(`  ${name}: ${oS}${aS}z.enum(`)
           list.push(`    ${JSON.stringify(link.take)}`)
-          list.push(`)${l}${aE}${oE},`)
+          list.push(`  )${l}${aE}${oE},`)
         }
       }
     }
