@@ -27,7 +27,7 @@ const TYPE: Record<string, string> = {
  */
 
 export default function make(base: Base, hold: Hold) {
-  const hash: Record<string, Array<string>> = {}
+  const hash: Record<string, string[]> = {}
 
   for (const name in base.link) {
     const site = base.link[name]
@@ -39,7 +39,7 @@ export default function make(base: Base, hold: Hold) {
 
     hash[file] ??= []
 
-    const list = hash[file]!
+    const list = hash[file]
 
     switch (site.form) {
       case 'form':
@@ -96,7 +96,7 @@ export function make_hash({
   file: string
   hold: Hold
 }) {
-  const list: Array<string> = []
+  const list: string[] = []
 
   const typeName = toPascalCase(name)
   const TYPE_NAME = snakeCase(name).toUpperCase()
@@ -137,7 +137,7 @@ export function make_list({
   file: string
   hold: Hold
 }) {
-  const text: Array<string> = []
+  const text: string[] = []
 
   const typeName = toPascalCase(name)
   const TYPE_NAME = snakeCase(name)
@@ -178,7 +178,7 @@ export function make_form({
   file: string
   hold: Hold
 }) {
-  const list: Array<string> = []
+  const list: string[] = []
 
   const typeName = toPascalCase(name)
   const leak = 'leak' in form && form.leak
@@ -202,22 +202,14 @@ export function make_form({
 
     hold.save[typeParserName] ??= { file }
 
-    list.push(`let ${typeModelName}: z.ZodType<${typeName}>`)
-    list.push(``)
     list.push(
-      `export const ${typeParserName} = (): z.ZodType<${typeName}> => {`,
-      `  if (!${typeModelName}) {`,
-      `    ${typeModelName} = (${base}{`,
+      `export const ${typeParserName}: z.ZodType<${typeName}> = ${base}{`,
     )
   } else {
     hold.save[typeParserName] ??= { file }
 
-    list.push(`let ${typeModelName}: z.ZodType<${typeName}>`)
-    list.push(``)
     list.push(
-      `export const ${typeParserName} = (): z.ZodType<${typeName}> => {`,
-      `  if (!${typeModelName}) {`,
-      `    ${typeModelName} =`,
+      `export const ${typeParserName}: z.ZodType<${typeName}> =`,
     )
   }
 
@@ -229,25 +221,20 @@ export function make_form({
     file,
     hold,
   }).forEach(line => {
-    list.push(`      ${line}`)
+    list.push(`  ${line}`)
   })
 
   if ('link' in form) {
-    list.push(`    })`)
+    list.push(`})`)
     if (form.make) {
-      list.push(
-        `    .transform(MAKE('${name}', code.${form.make}.make))`,
-      )
+      list.push(`  .transform(MAKE('${name}', code.${form.make}.make))`)
     }
     if (leak) {
-      list.push(`    .passthrough()`)
+      list.push(`  .passthrough()`)
     }
 
-    list.push(`) as z.ZodType<${typeName}>`)
+    // list.push(`) as z.ZodType<${typeName}>`)
   }
-
-  list.push(`}`)
-  list.push(`  return ${typeModelName}!`, `}`)
 
   // const link: Array<string> = []
 
@@ -286,7 +273,7 @@ export function make_link_list({
   file: string
   hold: Hold
 }) {
-  const list: Array<string> = []
+  const list: string[] = []
   const load = (hold.load[file] ??= {})
 
   if ('link' in form) {
@@ -380,7 +367,7 @@ export function make_link_list({
         }
       } else if (link.case) {
         if (Array.isArray(link.case)) {
-          const like_case: Array<string> = []
+          const like_case: string[] = []
           link.case.forEach((c, i) => {
             if (c.like) {
               let type = TYPE[c.like]
@@ -412,7 +399,7 @@ export function make_link_list({
             )}])${aE}${oE},`,
           )
         } else {
-          const like_case: Array<string> = []
+          const like_case: string[] = []
           for (const name in link.case) {
             like_case.push(`'${name}'`)
           }
@@ -423,7 +410,7 @@ export function make_link_list({
           )
         }
       } else if (link.fuse) {
-        const like_fuse: Array<string> = []
+        const like_fuse: string[] = []
         link.fuse.forEach((c, i) => {
           if (c.like) {
             let type = TYPE[c.like]
@@ -480,9 +467,9 @@ export function make_link_list({
       }
     }
   } else if ('case' in form) {
-    const formList: Array<string> = []
-    const baseList: Array<any> = []
-    const formCase = form.case as Array<FormLike>
+    const formList: string[] = []
+    const baseList: any[] = []
+    const formCase = form.case as FormLike[]
 
     formCase.forEach(item => {
       let type = TYPE[item.like]
@@ -492,13 +479,13 @@ export function make_link_list({
       if (type) {
         formList.push(`${type}${r}`)
       } else {
-        type = `${toPascalCase(item.like as string)}Parser`
+        type = `${toPascalCase(item.like)}Parser`
         if (base.mesh[item.like]) {
           load[type] = true
           formList.push(`z.lazy(() => ${type}())${r}`)
         } else {
           type = `z.instanceof(${findAndLinkName({
-            like: item.like as string,
+            like: item.like,
             base,
             file,
             hold,
@@ -508,7 +495,7 @@ export function make_link_list({
       }
     })
 
-    let baseSite =
+    const baseSite =
       baseList.length > 0
         ? `z.enum([${baseList.join(', ')}])`
         : undefined
@@ -517,14 +504,14 @@ export function make_link_list({
       formList.push(baseSite)
     }
 
-    let formSite =
+    const formSite =
       formList.length === 1 && baseSite
         ? baseSite
         : `z.union([${formList.join(', ')}])`
     list.push(formSite)
   } else if ('fuse' in form) {
-    const formList: Array<string> = []
-    const fuse = form.fuse as Array<FormLike>
+    const formList: string[] = []
+    const fuse = form.fuse as FormLike[]
 
     fuse.forEach(item => {
       const itemModelName = `${item.like}Parser`
@@ -532,7 +519,7 @@ export function make_link_list({
       formList.push(`z.lazy(() => ${itemModelName}())`)
     })
 
-    let formSite = `z.intersection([${formList.join(', ')}])`
+    const formSite = `z.intersection([${formList.join(', ')}])`
     list.push(formSite)
   }
 
