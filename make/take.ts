@@ -1,5 +1,5 @@
-import { toPascalCase } from '~/code/tool.js'
-import snakeCase from 'lodash/snakeCase.js'
+import { toPascalCase } from '~/code/tool'
+import snakeCase from 'lodash/snakeCase'
 import {
   Base,
   Form,
@@ -7,8 +7,8 @@ import {
   FormLinkMesh,
   Hash,
   List,
-} from '~/code/type.js'
-import { Hold } from './types.js'
+} from '~/code/form'
+import { Hold } from './form'
 
 const TYPE: Record<string, string> = {
   boolean: 'z.boolean()',
@@ -23,7 +23,7 @@ const TYPE: Record<string, string> = {
 }
 
 /**
- * Make parsers in the `~/code/type/parser/index.ts` file.
+ * Make takes in the `[...path]/take.ts` file.
  */
 
 export default function make(base: Base, hold: Hold) {
@@ -35,7 +35,7 @@ export default function make(base: Base, hold: Hold) {
       continue
     }
 
-    const file = `${site.save}/parsers`
+    const file = `${site.save}/take`
 
     hash[file] ??= []
 
@@ -119,6 +119,7 @@ export function make_hash({
     list.push(
       `export const ${typeNameKeyModel}: z.ZodType<${typeNameKey}> = z.enum(${TYPE_NAME_KEY} as [${typeNameKey}, ...${typeNameKey}[]])`,
     )
+    list.push(``) // Add blank line after each hash parser
   }
 
   return list
@@ -235,6 +236,7 @@ export function make_form({
   list.push(
     `export type ${typeName}Record = z.infer<typeof ${typeParserName}>`,
   )
+  list.push(``) // Add blank line after each export type
 
   // const link: Array<string> = []
 
@@ -347,9 +349,9 @@ export function make_link_list({
           if (base.mesh[link.like]) {
             const meshForm = base.mesh[link.like]
             if (meshForm?.form === 'list') {
-              type = `${linkLikeModelName}()`
+              type = `${linkLikeModelName}`
             } else {
-              type = `${linkLikeModelName}()${l}`
+              type = `${linkLikeModelName}${l}`
             }
             load[linkLikeModelName] = true
             list.push(
@@ -380,7 +382,7 @@ export function make_link_list({
                 type = `${toPascalCase(c.like as string)}Parser`
                 if (base.mesh[c.like]) {
                   load[type] = true
-                  like_case.push(`z.lazy(() => ${type}())${r}`)
+                  like_case.push(`z.lazy(() => ${type})${r}`)
                 } else {
                   type = `z.instanceof(${findAndLinkName({
                     like: c.like as string,

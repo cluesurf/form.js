@@ -1,8 +1,8 @@
-import startCase from 'lodash/startCase.js'
-import camelCase from 'lodash/camelCase.js'
-import snakeCase from 'lodash/snakeCase.js'
-import isPlainObject from 'lodash/isPlainObject.js'
-import { TestBack } from './type.js'
+import startCase from 'lodash/startCase'
+import camelCase from 'lodash/camelCase'
+import snakeCase from 'lodash/snakeCase'
+import isPlainObject from 'lodash/isPlainObject'
+import { TestBack } from './form'
 import { RefinementCtx } from 'zod'
 
 export function toPascalCase(text: string) {

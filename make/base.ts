@@ -1,10 +1,10 @@
-import { toPascalCase } from '~/code/tool.js'
-import snakeCase from 'lodash/snakeCase.js'
-import { Hash, List, Base } from '~/code/type.js'
-import { Hold } from './types.js'
+import { toPascalCase } from '~/code/tool'
+import snakeCase from 'lodash/snakeCase'
+import { Hash, List, Base } from '~/code/form'
+import { Hold } from './form'
 
 /**
- * Make lists and hashes (data) in the `~/code/type/data/index.ts` file.
+ * Make lists and hashes (data) in the `[...path]/base.ts` file.
  */
 
 export default function make(base: Base, hold: Hold) {
@@ -13,7 +13,7 @@ export default function make(base: Base, hold: Hold) {
   for (const name in base.link) {
     const site = base.link[name]
     if (site) {
-      const file = `${site.save}/constants`
+      const file = `${site.save}/base`
 
       hold.load[file] ??= {}
 
@@ -27,7 +27,7 @@ export default function make(base: Base, hold: Hold) {
       continue
     }
 
-    const file = `${site.save}/constants`
+    const file = `${site.save}/base`
 
     const list = hash[file]
 

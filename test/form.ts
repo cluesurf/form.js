@@ -1,4 +1,4 @@
-import { Hash, List, Form } from '../code/type'
+import { Hash, List, Form } from '../code/form'
 import DATA from './data.json'
 
 export const ffmpeg_audio_codec: List = {

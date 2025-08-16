@@ -1,14 +1,15 @@
-import make_types, { Hold } from './types.js'
-import make_parsers from './parsers.js'
-import make_constants from './constants.js'
-import { Load } from '~/code/type.js'
+import make_types, { Hold } from './form'
+import make_parsers from './take'
+import make_constants from './base'
+import { Load } from '~/code/form'
+import { washFileList } from './flow'
 
 export type Make = Load
 
 export interface MakeBack {
-  type: Record<string, string>
-  parser: Record<string, string>
-  constant: Record<string, string>
+  form: Record<string, string>
+  take: Record<string, string>
+  base: Record<string, string>
 }
 
 export default async function make({
@@ -21,15 +22,15 @@ export default async function make({
   const parser_list_hash = make_parsers(baseMesh, hold)
   const constant_list_hash = make_constants(baseMesh, hold)
 
-  const type: Record<string, string> = {}
-  const parser: Record<string, string> = {}
-  const constant: Record<string, string> = {}
+  const form: Record<string, string> = {}
+  const take: Record<string, string> = {}
+  const base: Record<string, string> = {}
 
   for (const file in type_list_hash) {
     const list = type_list_hash[file]
     if (list?.length) {
       const castList = [...makeLoadList(hold, file), ...list]
-      type[file] = castList.join('\n')
+      form[file] = castList.join('\n')
     }
   }
 
@@ -38,27 +39,56 @@ export default async function make({
     if (list?.length) {
       const castList = [...makeLoadList(hold, file), ...list]
 
-      constant[file] = castList.join('\n')
+      base[file] = castList.join('\n')
     }
   }
 
   for (const file in parser_list_hash) {
     const list = parser_list_hash[file]
     if (list?.length) {
-      const base = [
+      const castList = [
         `import { z } from 'zod'`,
         `import { LOAD, MAKE, TEST } from '@cluesurf/form'`,
-        `import * as code from '${testLink}.ts'`,
+        `import * as code from '${testLink}'`,
         ``,
         ...makeLoadList(hold, file),
         ...list,
       ]
 
-      parser[file] = base.join('\n')
+      take[file] = castList.join('\n')
     }
   }
 
-  return { type, parser, constant }
+  return wash({ form, take, base })
+}
+
+async function wash(take: MakeBack): Promise<MakeBack> {
+  const make: MakeBack = {
+    form: await washList(take.form),
+    take: await washList(take.take),
+    base: await washList(take.base),
+  }
+
+  return make
+}
+
+async function washList(mesh: Record<string, string>) {
+  const list = await washFileList(
+    Object.keys(mesh).map(file => {
+      const text = mesh[file]!
+      // Convert ~ paths to valid file paths for ts-morph
+      const virtualPath = file.replace(/^~/, 'virtual') + '.ts'
+      return { file: virtualPath, text }
+    }),
+  )
+
+  // Map back to original keys
+  const originalKeys = Object.keys(mesh)
+  return list.reduce((newMesh, site, index) => {
+    const originalKey = originalKeys[index]!
+    newMesh[originalKey] = site.text!
+    return newMesh
+  }, {})
 }
 
 function makeLoadList(hold: Hold, file: string) {
@@ -79,7 +109,11 @@ function makeLoadList(hold: Hold, file: string) {
   for (const file in hash) {
     const list = hash[file]!
 
-    text.push(`import { ${list.sort().join(', ')} } from '${file}.ts'`)
+    const fileBase = file.endsWith('/index')
+      ? file.replace(/\/index$/, '')
+      : file
+
+    text.push(`import { ${list.sort().join(', ')} } from '${fileBase}'`)
   }
 
   text.push(``)

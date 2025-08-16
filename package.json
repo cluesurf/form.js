@@ -1,20 +1,24 @@
 {
   "name": "@cluesurf/form",
-  "version": "0.5.8",
+  "version": "0.6.0",
   "license": "MIT",
   "main": "./host/index.js",
   "type": "module",
+  "exports": {
+    ".": "./host/index.js",
+    "./make": "./host/make/index.js"
+  },
   "scripts": {
     "make": "rm -rf host && tsc && tsc-alias",
     "scan": "rm -rf host && concurrently --kill-others \"tsc -w\" \"tsc-alias -w\"",
-    "lint": "eslint --ext .ts ./make",
-    "lint:fix": "npm run lint -- --fix",
+    "lint": "eslint --ext .ts ./make --fix",
     "test:make": "npx tsx test/make.ts",
     "test": "npx tsx --no-warnings=ExperimentalWarning test/index.ts",
     "host": "pnpm make && npm publish --access=public"
   },
-  "prettier": "@cluesurf/form-code/love.json",
+  "prettier": "@cluesurf/wash/flow.json",
   "devDependencies": {
+    "@cluesurf/wash": "^0.6.0",
     "@types/lodash": "^4.14.194",
     "@types/node": "^22.15.3",
     "concurrently": "^7.6.0",
@@ -25,12 +29,10 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@cluesurf/form-code": "^0.5.0",
-    "@cluesurf/love-code": "^1.5.0",
-    "@termsurf/have": "^0.2.0",
-    "@termsurf/kink": "^0.1.2",
-    "dayjs": "^1.11.8",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "p-limit": "^7.0.0",
+    "prettier": "^3.5.3",
+    "ts-morph": "^26.0.0"
   },
   "peerDependencies": {
     "zod": "^3.22.4"

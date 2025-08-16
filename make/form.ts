@@ -1,4 +1,4 @@
-import { toPascalCase } from '~/code/tool.js'
+import { toPascalCase } from '~/code/tool'
 import {
   Form,
   FormLike,
@@ -8,7 +8,7 @@ import {
   Base,
   FormBaseCase,
   FormLikeCase,
-} from '~/code/type.js'
+} from '~/code/form'
 
 const TYPE: Record<string, string> = {
   boolean: 'boolean',
@@ -44,7 +44,7 @@ export type TypeName = string
 export type Load = Record<FileName, Record<TypeName, boolean>>
 
 /**
- * Make types in the `~/code/type/index.ts` file.
+ * Make types in the `[...path]/index.ts` file.
  */
 
 export default function make(base: Base, hold: Hold, need = true) {

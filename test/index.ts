@@ -1,6 +1,6 @@
 import * as MESH from './form'
 import * as test from './test'
-import makeTree from '../host/make'
+import makeTree from '../make'
 import fs from 'fs'
 import path from 'path'
 
@@ -18,25 +18,25 @@ async function make() {
     testLink: '~/test/test',
   })
 
-  for (const name in tree.type) {
+  for (const name in tree.form) {
     const link = name.replace('~', '.')
     const base = path.dirname(link)
     fs.mkdirSync(base, { recursive: true })
-    fs.writeFileSync(`${link}.ts`, tree.type[name] as string)
+    fs.writeFileSync(`${link}.ts`, tree.form[name] as string)
   }
 
-  for (const name in tree.parser) {
+  for (const name in tree.take) {
     const link = name.replace('~', '.')
     const base = path.dirname(link)
     fs.mkdirSync(base, { recursive: true })
-    fs.writeFileSync(`${link}.ts`, tree.parser[name] as string)
+    fs.writeFileSync(`${link}.ts`, tree.take[name] as string)
   }
 
-  for (const name in tree.constant) {
+  for (const name in tree.base) {
     const link = name.replace('~', '.')
     const base = path.dirname(link)
     fs.mkdirSync(base, { recursive: true })
-    fs.writeFileSync(`${link}.ts`, tree.constant[name] as string)
+    fs.writeFileSync(`${link}.ts`, tree.base[name] as string)
   }
 }
 

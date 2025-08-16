@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
-    "module": "Node16",
+    "module": "ESNext",
     "target": "ES2015",
     "lib": ["es2020", "dom"],
     "outDir": "host",
     "rootDir": ".",
     "sourceMap": true,
     "declaration": true,
-    "moduleResolution": "node16",
+    "moduleResolution": "bundler",
     "strictNullChecks": true,
     "strict": true,
     "esModuleInterop": true,
@@ -25,5 +25,5 @@
     }
   },
   "include": ["*.ts", "**/*.ts", "*.d.ts"],
-  "exclude": ["node_modules", "host", "tmp", "test"]
+  "exclude": ["node_modules", "host", "tmp"]
 }
