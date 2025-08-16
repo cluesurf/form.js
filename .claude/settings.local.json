@@ -19,7 +19,9 @@
       "Bash(touch:*)",
       "Bash(tsc)",
       "Bash(tsc-alias:*)",
-      "Bash(tsc:*)"
+      "Bash(tsc:*)",
+      "Bash(npx prettier:*)",
+      "Bash(npx eslint:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

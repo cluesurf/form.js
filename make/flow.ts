@@ -2,6 +2,7 @@ import os from 'os'
 import pLimit from 'p-limit'
 import prettier from 'prettier'
 import path from 'path'
+import { ESLint } from 'eslint'
 import { Project } from 'ts-morph' // npm i ts-morph
 
 // 1. Create a single ts-morph project once (cheap to reuse)
@@ -44,14 +45,22 @@ export async function washFileList(
     sourceFile.organizeImports()
   }
 
-  // 5. Read back, Prettier format in parallel (in-memory)
+  // 5. Create ESLint instance
+  const eslint = new ESLint({ fix: true })
+
+  // 6. Read back, ESLint + Prettier format in parallel (in-memory)
   const taskList = fileList.map(({ file }) =>
     limit(async () => {
       const sf = project.getSourceFileOrThrow(file)
       const organized = sf.getFullText()
+      
+      // Apply ESLint fixes for spacing
+      const eslintResults = await eslint.lintText(organized, { filePath: file })
+      const eslintFixed = eslintResults[0]?.output || organized
+      
       // Load prettier config from project
       const prettierConfig = await prettier.resolveConfig(process.cwd()) || PRETTIER
-      const formatted = await prettier.format(organized, {
+      const formatted = await prettier.format(eslintFixed, {
         ...prettierConfig,
         parser: 'typescript',
       })

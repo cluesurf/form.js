@@ -119,7 +119,6 @@ export function make_hash({
     list.push(
       `export const ${typeNameKeyModel}: z.ZodType<${typeNameKey}> = z.enum(${TYPE_NAME_KEY} as [${typeNameKey}, ...${typeNameKey}[]])`,
     )
-    list.push(``) // Add blank line after each hash parser
   }
 
   return list
@@ -236,7 +235,6 @@ export function make_form({
   list.push(
     `export type ${typeName}Record = z.infer<typeof ${typeParserName}>`,
   )
-  list.push(``) // Add blank line after each export type
 
   // const link: Array<string> = []
 
