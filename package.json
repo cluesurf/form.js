@@ -1,13 +1,9 @@
 {
   "name": "@cluesurf/form",
-  "version": "0.6.4",
+  "version": "0.6.10",
   "license": "MIT",
   "main": "./host/index.js",
   "type": "module",
-  "exports": {
-    ".": "./host/index.js",
-    "./make": "./host/make/index.js"
-  },
   "scripts": {
     "make": "rm -rf host && tsc && tsc-alias",
     "scan": "rm -rf host && concurrently --kill-others \"tsc -w\" \"tsc-alias -w\"",
