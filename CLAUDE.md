@@ -18,3 +18,4 @@
   PLEASE MAKE SURE THAT IS POSSIBLE.
 - All readmes should have a LOWERCASE file name, exactly as `readme.md`,
   not `README.md`.
+- NEVER ADD .js TO IMPORTS!

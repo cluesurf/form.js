@@ -1,0 +1,6 @@
+{
+  "resolveFullPaths": true,
+  "silent": false,
+  "outDir": "host",
+  "declarationDir": "host"
+}
