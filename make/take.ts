@@ -147,19 +147,12 @@ export function make_list({
   const typeNameModel = `${typeName}`
 
   load[typeName] = true
+  load[TYPE_NAME] = true
 
   hold.save[`${typeNameModel}Parser`] ??= { file }
 
-  text.push(`let ${typeNameModel}Model: z.ZodType<${typeName}>`)
-  text.push(``)
-
   text.push(
-    `export const ${typeNameModel}Parser = () => {`,
-    `  if (!${typeNameModel}Model) {`,
-    `    ${typeNameModel}Model = z.enum(LOAD('${TYPE_NAME}') as readonly [string, ...string[]]) as z.ZodType<${typeName}>`,
-    `  }`,
-    `  return ${typeNameModel}Model!`,
-    `}`,
+    `export const ${typeNameModel}Parser = z.enum(${TYPE_NAME} as readonly [string, ...string[]]) as z.ZodType<${typeName}>`,
   )
 
   return text
