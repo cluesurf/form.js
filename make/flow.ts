@@ -46,21 +46,22 @@ export async function washFileList(
   }
 
   // 5. Create ESLint instance
-  const eslint = new ESLint({ fix: true })
+  // const eslint = new ESLint({ fix: true })
 
   // 6. Read back, ESLint + Prettier format in parallel (in-memory)
   const taskList = fileList.map(({ file }) =>
     limit(async () => {
       const sf = project.getSourceFileOrThrow(file)
       const organized = sf.getFullText()
-      
-      // Apply ESLint fixes for spacing
-      const eslintResults = await eslint.lintText(organized, { filePath: file })
-      const eslintFixed = eslintResults[0]?.output || organized
-      
+
+      // // Apply ESLint fixes for spacing
+      // const eslintResults = await eslint.lintText(organized, { filePath: file })
+      // const eslintFixed = eslintResults[0]?.output || organized
+
       // Load prettier config from project
-      const prettierConfig = await prettier.resolveConfig(process.cwd()) || PRETTIER
-      const formatted = await prettier.format(eslintFixed, {
+      const prettierConfig =
+        (await prettier.resolveConfig(process.cwd())) || PRETTIER
+      const formatted = await prettier.format(organized, {
         ...prettierConfig,
         parser: 'typescript',
       })
