@@ -140,7 +140,7 @@ export function make_list({
   const text: string[] = []
 
   const typeName = toPascalCase(name)
-  const TYPE_NAME = snakeCase(name)
+  const TYPE_NAME = snakeCase(name).toUpperCase()
 
   const load = (hold.load[file] ??= {})
 
