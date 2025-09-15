@@ -416,7 +416,7 @@ export function make_link_list({
               type = `${toPascalCase(c.like as string)}Parser`
               if (base.mesh[c.like]) {
                 load[type] = true
-                like_fuse.push(`z.lazy(() => ${type}())${r}`)
+                like_fuse.push(`z.lazy(() => ${type})${r}`)
               } else {
                 type = `z.instanceof(${findAndLinkName({
                   like: c.like as string,
@@ -475,7 +475,7 @@ export function make_link_list({
         type = `${toPascalCase(item.like)}Parser`
         if (base.mesh[item.like]) {
           load[type] = true
-          formList.push(`z.lazy(() => ${type}())${r}`)
+          formList.push(`z.lazy(() => ${type})${r}`)
         } else {
           type = `z.instanceof(${findAndLinkName({
             like: item.like,
@@ -509,7 +509,7 @@ export function make_link_list({
     fuse.forEach(item => {
       const itemModelName = `${item.like}Parser`
       load[itemModelName] = true
-      formList.push(`z.lazy(() => ${itemModelName}())`)
+      formList.push(`z.lazy(() => ${itemModelName})`)
     })
 
     const formSite = `z.intersection([${formList.join(', ')}])`
