@@ -2,6 +2,7 @@ import { RefinementCtx } from 'zod'
 
 export type Load = Base & {
   testLink: string
+  codeLink: string
 }
 
 export type FormBond = string | number | boolean | null

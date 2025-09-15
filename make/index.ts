@@ -14,6 +14,7 @@ export interface MakeBack {
 
 export default async function make({
   testLink,
+  codeLink,
   ...baseMesh
 }: Make): Promise<MakeBack> {
   const hold: Hold = { load: {}, save: {} }
@@ -59,25 +60,30 @@ export default async function make({
     }
   }
 
-  return wash({ form, take, base })
+  return wash({ form, take, base, codeLink })
 }
 
-async function wash(take: MakeBack): Promise<MakeBack> {
+async function wash(
+  take: MakeBack & { codeLink: string },
+): Promise<MakeBack> {
   const make: MakeBack = {
-    form: await washList(take.form),
-    take: await washList(take.take),
-    base: await washList(take.base),
+    form: await washList(take.form, take.codeLink),
+    take: await washList(take.take, take.codeLink),
+    base: await washList(take.base, take.codeLink),
   }
 
   return make
 }
 
-async function washList(mesh: Record<string, string>) {
+async function washList(
+  mesh: Record<string, string>,
+  codeLink: string,
+) {
   const list = await washFileList(
     Object.keys(mesh).map(file => {
       const text = mesh[file]!
       // Convert ~ paths to valid file paths for ts-morph
-      const virtualPath = file.replace(/^~/, 'virtual') + '.ts'
+      const virtualPath = file.replace(/^~/, codeLink) + '.ts'
       return { file: virtualPath, text }
     }),
   )

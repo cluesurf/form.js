@@ -16,6 +16,7 @@ async function make() {
     mesh: { ...MESH, ...test },
     link: { ...MESH, ...test },
     testLink: '~/test/test',
+    codeLink: '.',
   })
 
   for (const name in tree.form) {
