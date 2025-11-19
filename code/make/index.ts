@@ -1,7 +1,7 @@
 import make_types, { Hold } from './form'
 import make_parsers from './take'
 import make_constants from './base'
-import { Load } from '~/code/form'
+import { Load } from '@/form'
 import { washFileList } from './flow'
 
 export type Make = Load

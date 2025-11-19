@@ -4,7 +4,7 @@
     "target": "ES2015",
     "lib": ["es2020", "dom"],
     "outDir": "host",
-    "rootDir": ".",
+    "rootDir": "code",
     "sourceMap": true,
     "declaration": true,
     "moduleResolution": "bundler",
@@ -20,10 +20,9 @@
     "typeRoots": ["node_modules/@types"],
     "noImplicitAny": false,
     "paths": {
-      "~/*": ["./*"],
-      "~": ["./index.ts"]
+      "@/*": ["./code/*"]
     }
   },
-  "include": ["*.ts", "**/*.ts", "*.d.ts"],
+  "include": ["code/**/*.ts"],
   "exclude": ["node_modules", "host", "tmp", "test"]
 }

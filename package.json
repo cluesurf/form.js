@@ -1,11 +1,15 @@
 {
   "name": "@cluesurf/form",
-  "version": "0.6.28",
+  "version": "0.7.2",
   "license": "MIT",
   "main": "./host/index.js",
   "type": "module",
+  "exports": {
+    ".": "./host/index.js",
+    "./make": "./host/make/index.js"
+  },
   "scripts": {
-    "make": "rm -rf host && tsc && tsc-alias",
+    "make": "rm -rf host && mkdir -p host && pnpm exec tsc --project tsconfig.json --pretty --noEmitOnError false && pnpm exec tsc-alias --project tsconfig.json && cp package.json host",
     "scan": "rm -rf host && concurrently --kill-others \"tsc -w\" \"tsc-alias -w\"",
     "lint": "eslint --ext .ts ./make --fix",
     "test:make": "npx tsx test/make.ts",

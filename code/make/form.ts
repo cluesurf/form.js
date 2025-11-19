@@ -1,4 +1,4 @@
-import { toPascalCase } from '~/code/tool'
+import { toPascalCase } from '@/tool'
 import {
   Form,
   FormLike,
@@ -8,7 +8,7 @@ import {
   Base,
   FormBaseCase,
   FormLikeCase,
-} from '~/code/form'
+} from '@/form'
 
 const TYPE: Record<string, string> = {
   boolean: 'boolean',

@@ -1,6 +1,6 @@
-import { toPascalCase } from '~/code/tool'
+import { toPascalCase } from '@/tool'
 import snakeCase from 'lodash/snakeCase'
-import { Hash, List, Base } from '~/code/form'
+import { Hash, List, Base } from '@/form'
 import { Hold } from './form'
 
 /**

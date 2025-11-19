@@ -1,4 +1,4 @@
-import { toPascalCase } from '~/code/tool'
+import { toPascalCase } from '@/tool'
 import snakeCase from 'lodash/snakeCase'
 import {
   Base,
@@ -7,7 +7,7 @@ import {
   FormLinkMesh,
   Hash,
   List,
-} from '~/code/form'
+} from '@/form'
 import { Hold } from './form'
 
 const TYPE: Record<string, string> = {

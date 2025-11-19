@@ -1,8 +1,8 @@
 import os from 'os'
 import pLimit from 'p-limit'
 import prettier from 'prettier'
-import path from 'path'
-import { ESLint } from 'eslint'
+// import path from 'path'
+// import { ESLint } from 'eslint'
 import { Project } from 'ts-morph' // npm i ts-morph
 
 // 1. Create a single ts-morph project once (cheap to reuse)
