@@ -309,6 +309,20 @@ export function make_link_list({
                 need,
               })
               like_case.push(type)
+            } else if (c.link) {
+              const lines: Array<string> = []
+              lines.push('{')
+              make_link_list({
+                form: c as FormLinkMesh,
+                base,
+                hold,
+                file,
+                need,
+              }).forEach(line => {
+                lines.push(`  ${line}`)
+              })
+              lines.push('}')
+              like_case.push(lines.join('\n'))
             }
           })
           list.push(
@@ -419,6 +433,20 @@ function make_form_case({
         need,
       })
       formList.push(type)
+    } else if (typeof item === 'object' && 'link' in item) {
+      const lines: Array<string> = []
+      lines.push('{')
+      make_link_list({
+        form: item as FormLinkMesh,
+        base,
+        hold,
+        file,
+        need,
+      }).forEach(line => {
+        lines.push(`  ${line}`)
+      })
+      lines.push('}')
+      formList.push(lines.join('\n'))
     }
   })
 

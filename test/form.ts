@@ -686,3 +686,24 @@ export const language_flow: Form = {
     variants: { like: 'language_flow_variant', list: true },
   },
 }
+
+export const test_case: Form = {
+  form: 'form',
+  save: '~/test/hold',
+  case: [
+    {
+      link: {
+        id: { like: 'string', size: 32 },
+        slug: { like: 'string' },
+        text: { like: 'string' },
+        language: { like: 'language' },
+        variants: { like: 'language_flow_variant', list: true },
+      },
+    },
+    {
+      link: {
+        random: { like: 'string' },
+      },
+    },
+  ],
+}

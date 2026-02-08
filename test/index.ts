@@ -1,6 +1,6 @@
 import * as MESH from './form'
 import * as test from './test'
-import makeTree from '../make'
+import makeTree from '../code/make'
 import fs from 'fs'
 import path from 'path'
 

@@ -384,6 +384,21 @@ export function make_link_list({
                   like_case.push(`${type}${r}`)
                 }
               }
+            } else if (c.link) {
+              const lines: string[] = []
+              lines.push('z.object({')
+              make_link_list({
+                name,
+                form: c as FormLinkMesh,
+                base,
+                leak,
+                file,
+                hold,
+              }).forEach(line => {
+                lines.push(`  ${line}`)
+              })
+              lines.push('})')
+              like_case.push(lines.join('\n'))
             }
           })
           list.push(
@@ -465,26 +480,43 @@ export function make_link_list({
     const formCase = form.case as FormLike[]
 
     formCase.forEach(item => {
-      let type = TYPE[item.like]
-      const r = item.test
-        ? `.refine(TEST('${name}', code.${item.test}.test))`
-        : ''
-      if (type) {
-        formList.push(`${type}${r}`)
-      } else {
-        type = `${toPascalCase(item.like)}Parser`
-        if (base.mesh[item.like]) {
-          load[type] = true
-          formList.push(`z.lazy(() => ${type})${r}`)
-        } else {
-          type = `z.instanceof(${findAndLinkName({
-            like: item.like,
-            base,
-            file,
-            hold,
-          })})`
+      if ('like' in item) {
+        let type = TYPE[item.like]
+        const r = item.test
+          ? `.refine(TEST('${name}', code.${item.test}.test))`
+          : ''
+        if (type) {
           formList.push(`${type}${r}`)
+        } else {
+          type = `${toPascalCase(item.like)}Parser`
+          if (base.mesh[item.like]) {
+            load[type] = true
+            formList.push(`z.lazy(() => ${type})${r}`)
+          } else {
+            type = `z.instanceof(${findAndLinkName({
+              like: item.like,
+              base,
+              file,
+              hold,
+            })})`
+            formList.push(`${type}${r}`)
+          }
         }
+      } else if ('link' in item) {
+        const lines: string[] = []
+        lines.push('z.object({')
+        make_link_list({
+          name,
+          form: item as FormLinkMesh,
+          base,
+          leak,
+          file,
+          hold,
+        }).forEach(line => {
+          lines.push(`  ${line}`)
+        })
+        lines.push('})')
+        formList.push(lines.join('\n'))
       }
     })
 
