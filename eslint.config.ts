@@ -1,3 +1,3 @@
-import LINT from '@cluesurf/form-code/lint'
+import LINT from '@cluesurf/wash/lint'
 
 export default LINT
