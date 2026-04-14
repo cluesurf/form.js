@@ -9,6 +9,7 @@ import {
   FormBaseCase,
   FormLikeCase,
 } from '@/form'
+import { detectEnumStyleNesting } from './shared'
 
 const TYPE: Record<string, string> = {
   boolean: 'boolean',
@@ -355,17 +356,23 @@ export function make_link_list({
           `  ${name}${optional}: ${aS}${like_fuse.join(' & ')}${aE}`,
         )
       } else if (link.link) {
-        list.push(`  ${name}${optional}: ${aS}{`)
-        make_link_list({
-          form: link as FormLinkMesh,
-          base,
-          hold,
-          file,
-          need,
-        }).forEach(line => {
-          list.push(`  ${line}`)
-        })
-        list.push(`}${aE}`)
+        const enumStyle = detectEnumStyleNesting(link.link)
+        if (enumStyle.isEnum) {
+          const union = enumStyle.keys.map(key => `'${key}'`).join(' | ')
+          list.push(`  ${name}${optional}: ${aS}${union}${aE}`)
+        } else {
+          list.push(`  ${name}${optional}: ${aS}{`)
+          make_link_list({
+            form: link as FormLinkMesh,
+            base,
+            hold,
+            file,
+            need,
+          }).forEach(line => {
+            list.push(`  ${line}`)
+          })
+          list.push(`}${aE}`)
+        }
       } else if (link.take) {
         list.push(
           `  ${name}${optional}: ${aS}${link.take

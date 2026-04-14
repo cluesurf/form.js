@@ -8,6 +8,7 @@ import {
   Hash,
   List,
 } from '@/form'
+import { detectEnumStyleNesting } from './shared'
 import { Hold } from './form'
 
 const TYPE: Record<string, string> = {
@@ -291,24 +292,52 @@ export function make_link_list({
       let max = ''
 
       if (link.size) {
-        if (link.like === 'natural_number') {
+        if (link.like === 'natural_number' || link.like === 'integer') {
+          // Integer-valued numerics. `natural_number` additionally
+          // floors at zero (default min + clamps on explicit
+          // bounds); `integer` allows negatives so no clamp.
+          const floorAtZero = link.like === 'natural_number'
+
           if (
             typeof link.size.rise === 'number' &&
             link.size.rise > 0
           ) {
             min = `.gt(${link.size.rise})`
           } else if (typeof link.size.rise_meet === 'number') {
-            min = `.gte(${Math.max(link.size.rise_meet as number, 0)})`
-          } else {
+            min = floorAtZero
+              ? `.gte(${Math.max(link.size.rise_meet as number, 0)})`
+              : `.gte(${link.size.rise_meet})`
+          } else if (floorAtZero) {
             min = `.gte(0)`
           }
 
           if (typeof link.size.fall === 'number') {
-            max = `.lt(${Math.max(link.size.fall as number, 1)})`
+            max = floorAtZero
+              ? `.lt(${Math.max(link.size.fall as number, 1)})`
+              : `.lt(${link.size.fall})`
           } else if (typeof link.size.fall_meet === 'number') {
-            max = `.lte(${Math.max(link.size.fall_meet as number, 1)})`
+            max = floorAtZero
+              ? `.lte(${Math.max(link.size.fall_meet as number, 1)})`
+              : `.lte(${link.size.fall_meet})`
+          }
+        } else if (link.like === 'string' || link.list === true) {
+          // Strings and arrays use `.min()` / `.max()` in zod 4 —
+          // `.gte/.lte` only exist on numeric schemas. Inclusive
+          // bounds via `rise_meet` / `fall_meet`; exclusive `rise`
+          // adds 1, exclusive `fall` subtracts 1.
+          if (typeof link.size.rise === 'number') {
+            min = `.min(${link.size.rise + 1})`
+          } else if (typeof link.size.rise_meet === 'number') {
+            min = `.min(${link.size.rise_meet})`
+          }
+
+          if (typeof link.size.fall === 'number') {
+            max = `.max(${Math.max(link.size.fall - 1, 0)})`
+          } else if (typeof link.size.fall_meet === 'number') {
+            max = `.max(${link.size.fall_meet})`
           }
         } else {
+          // Remaining numeric types (integer, decimal, number).
           if (typeof link.size.rise === 'number') {
             min = `.gt(${link.size.rise})`
           } else if (typeof link.size.rise_meet === 'number') {
@@ -322,6 +351,7 @@ export function make_link_list({
           }
         }
       } else if (link.like === 'natural_number') {
+        // Default floor when no explicit size: natural numbers >= 0.
         min = `.gte(0)`
       }
 
@@ -450,18 +480,25 @@ export function make_link_list({
           )}])${aE}${oE},`,
         )
       } else if (link.link) {
-        list.push(`  ${name}: ${oS}${aS}z.object({`)
-        make_link_list({
-          name,
-          form: link as FormLinkMesh,
-          base,
-          leak,
-          file,
-          hold,
-        }).forEach(line => {
-          list.push(`  ${line}`)
-        })
-        list.push(`  })${l}${aE}${oE},`)
+        const enumStyle = detectEnumStyleNesting(link.link)
+        if (enumStyle.isEnum) {
+          list.push(
+            `  ${name}: ${oS}${aS}z.enum(${JSON.stringify(enumStyle.keys)})${l}${aE}${oE},`,
+          )
+        } else {
+          list.push(`  ${name}: ${oS}${aS}z.object({`)
+          make_link_list({
+            name,
+            form: link as FormLinkMesh,
+            base,
+            leak,
+            file,
+            hold,
+          }).forEach(line => {
+            list.push(`  ${line}`)
+          })
+          list.push(`  })${l}${aE}${oE},`)
+        }
       } else if (link.take) {
         if (link.take.length === 1) {
           list.push(`  ${name}: ${oS}${aS}z.literal(`)
