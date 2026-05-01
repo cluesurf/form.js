@@ -23,6 +23,17 @@ const TYPE: Record<string, string> = {
   natural_number: 'z.number().int()',
 }
 
+// Zod's `z.enum` only accepts string values. For arrays containing
+// numbers, booleans, or other non-strings (e.g. font weights
+// `[100, 200, ..., 900]`), emit a union of literals instead.
+function takeEnum(take: Array<any>) {
+  if (take.every(v => typeof v === 'string')) {
+    return `z.enum(${JSON.stringify(take)})`
+  }
+  const literals = take.map(v => `z.literal(${JSON.stringify(v)})`)
+  return `z.union([${literals.join(', ')}])`
+}
+
 /**
  * Make takes in the `[...path]/take.ts` file.
  */
@@ -152,9 +163,22 @@ export function make_list({
 
   hold.save[`${typeNameModel}Parser`] ??= { file }
 
-  text.push(
-    `export const ${typeNameModel}Parser = z.enum(${TYPE_NAME} as readonly [string, ...string[]]) as z.ZodType<${typeName}>`,
-  )
+  const allStrings =
+    Array.isArray(list.list) &&
+    list.list.every(v => typeof v === 'string')
+
+  if (allStrings) {
+    text.push(
+      `export const ${typeNameModel}Parser = z.enum(${TYPE_NAME} as readonly [string, ...string[]]) as z.ZodType<${typeName}>`,
+    )
+  } else {
+    const literals = (list.list as Array<any>)
+      .map(v => `z.literal(${JSON.stringify(v)})`)
+      .join(', ')
+    text.push(
+      `export const ${typeNameModel}Parser = z.union([${literals}]) as z.ZodType<${typeName}>`,
+    )
+  }
 
   return text
 }
@@ -187,8 +211,11 @@ export function make_form({
     if (form.base) {
       const baseParserName = `${toPascalCase(form.base)}Parser`
       load[baseParserName] = true
-      // base = `(${baseParserName} as z.ZodObject<z.ZodRawShape>).extend(`
-      base = `(${baseParserName}() as any).extend(`
+      // Zod 4: parsers are exported as ZodObject values directly,
+      // not factory functions. Call `.extend` on the schema itself
+      // — the old `SomeParser() as any` factory form throws at
+      // runtime because the schema is not callable.
+      base = `(${baseParserName} as any).extend(`
     } else {
       base = 'z.object('
     }
@@ -358,7 +385,18 @@ export function make_link_list({
       const l = leak ? `.passthrough()` : ''
       if (typeof link.like === 'string') {
         let type = TYPE[link.like]
-        if (type) {
+        if (type && link.take) {
+          // When take is specified, generate literal/enum instead of base type
+          if (link.take.length === 1) {
+            list.push(
+              `  ${name}: ${oS}${aS}z.literal(${JSON.stringify(link.take[0])})${aE}${oE}${f},`,
+            )
+          } else {
+            list.push(
+              `  ${name}: ${oS}${aS}${takeEnum(link.take)}${aE}${oE}${f},`,
+            )
+          }
+        } else if (type) {
           list.push(
             `  ${name}: ${oS}${aS}${type}${min}${max}${r}${aE}${oE}${f},`,
           )
@@ -505,9 +543,9 @@ export function make_link_list({
           list.push(`    ${JSON.stringify(link.take[0])}`)
           list.push(`  )${l}${aE}${oE},`)
         } else {
-          list.push(`  ${name}: ${oS}${aS}z.enum(`)
-          list.push(`    ${JSON.stringify(link.take)}`)
-          list.push(`  )${l}${aE}${oE},`)
+          list.push(
+            `  ${name}: ${oS}${aS}${takeEnum(link.take)}${l}${aE}${oE},`,
+          )
         }
       }
     }
