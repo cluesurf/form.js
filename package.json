@@ -24,21 +24,33 @@
     "ts-node": "^10.9.2",
     "tsc-alias": "1.8.16",
     "tsx": "4.21.0",
-    "typescript": "6.0.2"
+    "typescript": "6.0.2",
+    "vitest": "^4.1.5"
   },
   "dependencies": {
     "lodash": "4.17.23",
     "p-limit": "7.3.0",
     "prettier": "3.8.1",
-    "ts-morph": "27.0.2",
-    "vitest": "^4.1.5"
+    "ts-morph": "27.0.2"
   },
   "peerDependencies": {
+    "react": ">=18",
     "zod": "4.3.6"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
   },
   "pnpm": {
     "overrides": {
       "@isaacs/brace-expansion": ">=5.0.1"
     }
+  },
+  "optionalDependencies": {
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "react": "19.2.5",
+    "react-dom": "19.2.5"
   }
 }

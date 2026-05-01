@@ -1,4 +1,5 @@
-import { Hash, List, Form } from '../code/form'
+import { Hash, List, Form, Task, Flow } from '../code/form'
+import { flow } from '../code/make/flow/index'
 import DATA from './data.json'
 
 export const ffmpeg_audio_codec: List = {
@@ -705,5 +706,59 @@ export const test_case: Form = {
         random: { like: 'string' },
       },
     },
+  ],
+}
+
+/**
+ * `Task`: a function definition. `take` declares the input
+ * record (same shape as `form.link`); `like` names the output
+ * form. Codegen emits a TS input type and a zod parser for
+ * `take`.
+ */
+
+export const greet_user: Task = {
+  form: 'task',
+  save: '~/test/hold/task',
+  take: {
+    name: { like: 'string' },
+    age: { like: 'natural_number', need: false },
+    polite: { like: 'boolean', need: false, fall: true },
+  },
+  like: 'string',
+}
+
+export const sum_numbers: Task = {
+  form: 'task',
+  save: '~/test/hold/task',
+  take: {
+    values: { list: true, like: 'integer' },
+  },
+  like: 'integer',
+}
+
+/**
+ * `Flow`: a renderable tree with declared params. The same
+ * shape feeds both i18n (`renderText`) and component trees
+ * (`renderReact`) — the renderer choice picks the output
+ * type, the schema stays generic.
+ */
+
+export const message_count_template: Flow = {
+  form: 'flow',
+  save: '~/test/hold/flow',
+  link: {
+    count: { like: 'natural_number' },
+    name: { like: 'string' },
+  },
+  flow: [
+    flow.text('You have '),
+    flow.reference('count'),
+    flow.text(' '),
+    flow.pluralCases('count', {
+      one: 'message',
+      other: 'messages',
+    }),
+    flow.text(', '),
+    flow.reference('name'),
   ],
 }

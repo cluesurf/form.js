@@ -2,12 +2,15 @@ import { toPascalCase } from '@/tool'
 import {
   Form,
   FormLike,
-  FormLinkMesh,
+  LinkMesh,
   Hash,
   List,
   Base,
   FormBaseCase,
+  FormBaseLink,
   FormLikeCase,
+  Task,
+  Flow,
 } from '@/form'
 import { detectEnumStyleNesting } from './shared'
 
@@ -24,6 +27,10 @@ const TYPE: Record<string, string> = {
   timestamp: 'Date',
   date: 'Date',
   uuid: 'string',
+}
+
+function castType(base: Base, like: string): string | undefined {
+  return base.cast?.form?.[like] ?? TYPE[like]
 }
 
 export type HoldFile = {
@@ -49,7 +56,7 @@ export type Load = Record<FileName, Record<TypeName, boolean>>
  */
 
 export default function make(base: Base, hold: Hold, need = true) {
-  const hash: Record<string, Array<string>> = {}
+  const hash: Record<string, string[]> = {}
 
   for (const name in base.link) {
     const site = base.link[name]!
@@ -85,6 +92,20 @@ export default function make(base: Base, hold: Hold, need = true) {
           },
         )
         break
+      case 'task':
+        make_task({ task: site, base, name, hold, file, need }).forEach(
+          line => {
+            list.push(line)
+          },
+        )
+        break
+      case 'flow':
+        make_flow({ flow: site, base, name, hold, file, need }).forEach(
+          line => {
+            list.push(line)
+          },
+        )
+        break
     }
   }
 
@@ -106,7 +127,7 @@ export function make_form({
   file: string
   need?: boolean
 }) {
-  const list: Array<string> = []
+  const list: string[] = []
   const load = (hold.load[file] ??= {})
 
   const formName = makePascalName(name, need)
@@ -164,7 +185,7 @@ export function make_hash({
     return []
   }
 
-  const list: Array<string> = []
+  const list: string[] = []
 
   const typeValueName = makePascalName(`${name}_value`, need)
 
@@ -232,6 +253,52 @@ ${keyList.map(key => `  | '${key}'`).join('\n')}`)
   return list
 }
 
+export function make_task({
+  name,
+  task,
+  base,
+  hold,
+  file,
+  need = false,
+}: {
+  name: string
+  task: Task
+  base: Base
+  hold: Hold
+  file: string
+  need?: boolean
+}) {
+  const synthetic: FormBaseLink = {
+    form: 'form',
+    save: task.save,
+    link: task.take,
+  }
+  return make_form({ name, form: synthetic, base, hold, file, need })
+}
+
+export function make_flow({
+  name,
+  flow,
+  base,
+  hold,
+  file,
+  need = false,
+}: {
+  name: string
+  flow: Flow
+  base: Base
+  hold: Hold
+  file: string
+  need?: boolean
+}) {
+  const synthetic: FormBaseLink = {
+    form: 'form',
+    save: flow.save,
+    link: flow.link,
+  }
+  return make_form({ name, form: synthetic, base, hold, file, need })
+}
+
 export function make_list({
   name,
   list,
@@ -251,7 +318,7 @@ export function make_list({
     return []
   }
 
-  const text: Array<string> = []
+  const text: string[] = []
 
   const typeName = makePascalName(name, need)
 
@@ -271,13 +338,13 @@ export function make_link_list({
   file,
   need = false,
 }: {
-  form: Form | FormLinkMesh
+  form: Form | LinkMesh
   base: Base
   hold: Hold
   file: string
   need?: boolean
 }) {
-  const list: Array<string> = []
+  const list: string[] = []
 
   if ('link' in form) {
     for (const name in form.link) {
@@ -299,7 +366,7 @@ export function make_link_list({
         list.push(`  ${name}${optional}: ${aS}${type}${aE}`)
       } else if (link.case) {
         if (Array.isArray(link.case)) {
-          const like_case: Array<string> = []
+          const like_case: string[] = []
           link.case.forEach(c => {
             if (c.like) {
               const type = findAndLinkName({
@@ -311,10 +378,10 @@ export function make_link_list({
               })
               like_case.push(type)
             } else if (c.link) {
-              const lines: Array<string> = []
+              const lines: string[] = []
               lines.push('{')
               make_link_list({
-                form: c as FormLinkMesh,
+                form: c as LinkMesh,
                 base,
                 hold,
                 file,
@@ -330,7 +397,7 @@ export function make_link_list({
             `  ${name}${optional}: ${aS}${like_case.join(' | ')}${aE}`,
           )
         } else {
-          const like_case: Array<string> = []
+          const like_case: string[] = []
           for (const name in link.case) {
             like_case.push(`'${name}'`)
           }
@@ -339,7 +406,7 @@ export function make_link_list({
           )
         }
       } else if (link.fuse) {
-        const like_fuse: Array<string> = []
+        const like_fuse: string[] = []
         link.fuse.forEach(c => {
           if (c.like) {
             const type = findAndLinkName({
@@ -358,12 +425,14 @@ export function make_link_list({
       } else if (link.link) {
         const enumStyle = detectEnumStyleNesting(link.link)
         if (enumStyle.isEnum) {
-          const union = enumStyle.keys.map(key => `'${key}'`).join(' | ')
+          const union = enumStyle.keys
+            .map(key => `'${key}'`)
+            .join(' | ')
           list.push(`  ${name}${optional}: ${aS}${union}${aE}`)
         } else {
           list.push(`  ${name}${optional}: ${aS}{`)
           make_link_list({
-            form: link as FormLinkMesh,
+            form: link as LinkMesh,
             base,
             hold,
             file,
@@ -392,12 +461,12 @@ export function make_link_list({
       list.push(line)
     })
   } else if ('fuse' in form) {
-    const formList: Array<string> = []
-    const fuse = form.fuse as Array<FormLike>
+    const formList: string[] = []
+    const fuse = form.fuse as FormLike[]
 
     fuse.forEach(item => {
       const type = findAndLinkName({
-        like: item.like as string,
+        like: item.like,
         base,
         file,
         hold,
@@ -406,7 +475,7 @@ export function make_link_list({
       formList.push(type)
     })
 
-    let formSite = `${formList.join(' & ')}`
+    const formSite = `${formList.join(' & ')}`
     list.push(formSite)
   }
 
@@ -426,14 +495,14 @@ function make_form_case({
   file: string
   need?: boolean
 }) {
-  const formList: Array<string> = []
-  const baseList: Array<any> = []
-  const formCase = form.case as Array<FormLike>
+  const formList: string[] = []
+  const baseList: any[] = []
+  const formCase = form.case
 
   formCase.forEach(item => {
     if (typeof item === 'object' && 'like' in item) {
       const type = findAndLinkName({
-        like: item.like as string,
+        like: item.like,
         base,
         file,
         hold,
@@ -441,10 +510,10 @@ function make_form_case({
       })
       formList.push(type)
     } else if (typeof item === 'object' && 'link' in item) {
-      const lines: Array<string> = []
+      const lines: string[] = []
       lines.push('{')
       make_link_list({
-        form: item as FormLinkMesh,
+        form: item as LinkMesh,
         base,
         hold,
         file,
@@ -457,14 +526,14 @@ function make_form_case({
     }
   })
 
-  let baseSite =
+  const baseSite =
     baseList.length > 0 ? `${baseList.join(' | ')}` : undefined
 
   if (baseSite) {
     formList.push(baseSite)
   }
 
-  let formSite = `${formList.join(' | ')}`
+  const formSite = `${formList.join(' | ')}`
   return [formSite]
 }
 
@@ -481,8 +550,8 @@ function make_form_like({
   file: string
   need?: boolean
 }) {
-  const formList: Array<string> = []
-  const baseList: Array<any> = []
+  const formList: string[] = []
+  const baseList: any[] = []
   const type = findAndLinkName({
     like: form.like,
     base,
@@ -507,7 +576,7 @@ function findAndLinkName({
   hold: Hold
   need?: boolean
 }): string {
-  const type = TYPE[like]
+  const type = castType(base, like)
   if (typeof type === 'string') {
     return type
   }

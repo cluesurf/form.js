@@ -3,10 +3,13 @@ import snakeCase from 'lodash/snakeCase'
 import {
   Base,
   Form,
+  FormBaseLink,
   FormLike,
-  FormLinkMesh,
+  LinkMesh,
   Hash,
   List,
+  Task,
+  Flow,
 } from '@/form'
 import { detectEnumStyleNesting } from './shared'
 import { Hold } from './form'
@@ -23,10 +26,14 @@ const TYPE: Record<string, string> = {
   natural_number: 'z.number().int()',
 }
 
+function castType(base: Base, like: string): string | undefined {
+  return base.cast?.take?.[like] ?? TYPE[like]
+}
+
 // Zod's `z.enum` only accepts string values. For arrays containing
 // numbers, booleans, or other non-strings (e.g. font weights
 // `[100, 200, ..., 900]`), emit a union of literals instead.
-function takeEnum(take: Array<any>) {
+function takeEnum(take: any[]) {
   if (take.every(v => typeof v === 'string')) {
     return `z.enum(${JSON.stringify(take)})`
   }
@@ -89,10 +96,76 @@ export default function make(base: Base, hold: Hold) {
           list.push(line)
         })
         break
+      case 'task':
+        list.push(``)
+        make_task({
+          task: site,
+          base,
+          name,
+          file,
+          hold,
+        }).forEach(line => {
+          list.push(line)
+        })
+        break
+      case 'flow':
+        list.push(``)
+        make_flow({
+          flow: site,
+          base,
+          name,
+          file,
+          hold,
+        }).forEach(line => {
+          list.push(line)
+        })
+        break
     }
   }
 
   return hash
+}
+
+export function make_task({
+  name,
+  task,
+  base,
+  file,
+  hold,
+}: {
+  name: string
+  task: Task
+  base: Base
+  file: string
+  hold: Hold
+}) {
+  const synthetic: FormBaseLink = {
+    form: 'form',
+    save: task.save,
+    link: task.take,
+  }
+  return make_form({ name, form: synthetic, base, file, hold })
+}
+
+export function make_flow({
+  name,
+  flow,
+  base,
+  file,
+  hold,
+}: {
+  name: string
+  flow: Flow
+  base: Base
+  file: string
+  hold: Hold
+}) {
+  const synthetic: FormBaseLink = {
+    form: 'form',
+    save: flow.save,
+    link: flow.link,
+  }
+  return make_form({ name, form: synthetic, base, file, hold })
 }
 
 export function make_hash({
@@ -172,7 +245,7 @@ export function make_list({
       `export const ${typeNameModel}Parser = z.enum(${TYPE_NAME} as readonly [string, ...string[]]) as z.ZodType<${typeName}>`,
     )
   } else {
-    const literals = (list.list as Array<any>)
+    const literals = list.list
       .map(v => `z.literal(${JSON.stringify(v)})`)
       .join(', ')
     text.push(
@@ -288,7 +361,7 @@ export function make_link_list({
   hold,
 }: {
   name: string
-  form: Form | FormLinkMesh
+  form: Form | LinkMesh
   base: Base
   leak?: boolean
   file: string
@@ -384,7 +457,7 @@ export function make_link_list({
 
       const l = leak ? `.passthrough()` : ''
       if (typeof link.like === 'string') {
-        let type = TYPE[link.like]
+        let type = castType(base, link.like)
         if (type && link.take) {
           // When take is specified, generate literal/enum instead of base type
           if (link.take.length === 1) {
@@ -431,7 +504,7 @@ export function make_link_list({
           const like_case: string[] = []
           link.case.forEach((c, i) => {
             if (c.like) {
-              let type = TYPE[c.like]
+              let type = castType(base, c.like)
               const r = c.test
                 ? `.refine(TEST('${name}', code.${c.test}.test))`
                 : ''
@@ -457,7 +530,7 @@ export function make_link_list({
               lines.push('z.object({')
               make_link_list({
                 name,
-                form: c as FormLinkMesh,
+                form: c as LinkMesh,
                 base,
                 leak,
                 file,
@@ -489,7 +562,7 @@ export function make_link_list({
         const like_fuse: string[] = []
         link.fuse.forEach((c, i) => {
           if (c.like) {
-            let type = TYPE[c.like]
+            let type = castType(base, c.like)
             const r = c.test
               ? `.refine(TEST('${name}', code.${c.test}.test))`
               : ''
@@ -527,7 +600,7 @@ export function make_link_list({
           list.push(`  ${name}: ${oS}${aS}z.object({`)
           make_link_list({
             name,
-            form: link as FormLinkMesh,
+            form: link as LinkMesh,
             base,
             leak,
             file,
@@ -556,7 +629,7 @@ export function make_link_list({
 
     formCase.forEach(item => {
       if ('like' in item) {
-        let type = TYPE[item.like]
+        let type = castType(base, item.like)
         const r = item.test
           ? `.refine(TEST('${name}', code.${item.test}.test))`
           : ''
@@ -582,7 +655,7 @@ export function make_link_list({
         lines.push('z.object({')
         make_link_list({
           name,
-          form: item as FormLinkMesh,
+          form: item as LinkMesh,
           base,
           leak,
           file,
@@ -637,7 +710,7 @@ function findAndLinkName({
   file: string
   hold: Hold
 }): string {
-  const type = TYPE[like]
+  const type = castType(base, like)
   if (typeof type === 'string') {
     return type
   }

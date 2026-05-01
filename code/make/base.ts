@@ -1,6 +1,6 @@
 import { toPascalCase } from '@/tool'
 import snakeCase from 'lodash/snakeCase'
-import { Hash, List, Base } from '@/form'
+import { Flow, Hash, List, Base } from '@/form'
 import { Hold } from './form'
 
 /**
@@ -8,7 +8,7 @@ import { Hold } from './form'
  */
 
 export default function make(base: Base, hold: Hold) {
-  const hash: Record<string, Array<string>> = {}
+  const hash: Record<string, string[]> = {}
 
   for (const name in base.link) {
     const site = base.link[name]
@@ -50,10 +50,59 @@ export default function make(base: Base, hold: Hold) {
           },
         )
         break
+      case 'flow':
+        make_flow({ flow: site, base, name, hold, file }).forEach(
+          line => {
+            list.push(line)
+          },
+        )
+        break
     }
   }
 
   return hash
+}
+
+/**
+ * Emit the `Flow` node tree as a const so consumers can do:
+ *
+ *   import { MESSAGE_COUNT_FLOW } from './hold/flow/base'
+ *   flow.renderText({ form: 'weave', flow: MESSAGE_COUNT_FLOW }, ctx)
+ *
+ * The `flow:` payload is plain data; `JSON.stringify` round-trips
+ * cleanly because builders only emit literal node objects.
+ */
+
+export function make_flow({
+  name,
+  flow,
+  base,
+  file,
+  hold,
+}: {
+  name: string
+  flow: Flow
+  base: Base
+  file: string
+  hold: Hold
+}) {
+  const list: string[] = []
+  const TYPE_NAME = `${snakeCase(name).toUpperCase()}_FLOW`
+
+  hold.save[TYPE_NAME] ??= { file }
+  hold.load[file] ??= {}
+
+  // The `Node` type comes from the package root. Inlined because
+  // there's no schema entry to thread through `hold.save`.
+  list.push(``)
+  list.push(`import type { Node } from '@cluesurf/form'`)
+  list.push(``)
+  list.push(
+    `export const ${TYPE_NAME}: Node[] = ` +
+      JSON.stringify(flow.flow, null, 2),
+  )
+
+  return list
 }
 
 export function make_hash({
@@ -69,7 +118,7 @@ export function make_hash({
   file: string
   hold: Hold
 }) {
-  const list: Array<string> = []
+  const list: string[] = []
 
   list.push(``)
 
@@ -124,7 +173,7 @@ export function make_list({
   file: string
   hold: Hold
 }) {
-  const text: Array<string> = []
+  const text: string[] = []
 
   const typeName = toPascalCase(name)
   const TYPE_NAME = snakeCase(name).toUpperCase()

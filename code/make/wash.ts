@@ -30,7 +30,7 @@ const PRETTIER: prettier.Options = {
 }
 
 export async function washFileList(
-  fileList: Array<{ file: string; text: string }>,
+  fileList: { file: string; text: string }[],
 ) {
   // 2. Concurrency ~ number of cores
   const limit = pLimit(Math.max(2, Math.min(8, os.cpus().length)))
