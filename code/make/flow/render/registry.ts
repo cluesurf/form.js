@@ -38,7 +38,7 @@ import type { Scope } from './scope'
 // Context
 // ---------------------------------------------------------------------------
 
-export type BaseCtx = {
+export type BaseContext = {
   scope: Scope
   /**
    * Operator + task implementations. Keyed by name. Merges
@@ -54,7 +54,7 @@ export type BaseCtx = {
 
 export type CallHandler = (
   args: Record<string, unknown>,
-  ctx: BaseCtx,
+  context: BaseContext,
 ) => unknown
 
 /**
@@ -68,10 +68,10 @@ export type CallEntry = {
 }
 
 export function getCall(
-  ctx: BaseCtx,
+  context: BaseContext,
   name: string,
 ): CallHandler | undefined {
-  const fn = ctx.hook?.[name] ?? DEFAULT_HOOK[name]
+  const fn = context.hook?.[name] ?? DEFAULT_HOOK[name]
   return fn as CallHandler | undefined
 }
 
@@ -82,8 +82,8 @@ export function getCall(
  */
 export function collectCallArgs(
   node: Record<string, unknown>,
-  ctx: BaseCtx,
-  evaluateNode: (n: Node, ctx: BaseCtx) => unknown,
+  context: BaseContext,
+  evaluateNode: (n: Node, context: BaseContext) => unknown,
 ): Record<string, unknown> {
   const args: Record<string, unknown> = {}
   for (const k of Object.keys(node)) {
@@ -97,7 +97,7 @@ export function collectCallArgs(
       continue
     }
     const v = node[k]
-    args[k] = isNode(v) ? evaluateNode(v as Node, ctx) : v
+    args[k] = isNode(v) ? evaluateNode(v as Node, context) : v
   }
   return args
 }

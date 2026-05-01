@@ -24,10 +24,10 @@ export function LOAD(name: string) {
 
 export function MAKE(
   name: string,
-  fn: (bond: any, ctx: RefinementCtx, name: string) => any,
-): (bond: any, ctx: RefinementCtx) => any {
-  return (bond: any, ctx: RefinementCtx): any => {
-    return fn(bond, ctx, name)
+  fn: (bond: any, context: RefinementCtx, name: string) => any,
+): (bond: any, context: RefinementCtx) => any {
+  return (bond: any, context: RefinementCtx): any => {
+    return fn(bond, context, name)
   }
 }
 

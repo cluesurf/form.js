@@ -14,8 +14,8 @@ export {
 } from './render/index'
 
 export type {
-  BaseCtx,
+  BaseContext,
   Scope,
-  TextCtx,
-  TextCtx as RenderCtx,
+  TextContext,
+  TextContext as RenderCtx,
 } from './render/index'

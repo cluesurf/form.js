@@ -13,7 +13,7 @@ export type { Scope } from './scope'
 export { makeScope } from './scope'
 
 export type {
-  BaseCtx,
+  BaseContext,
   CallEntry,
   CallHandler,
 } from './registry'
@@ -24,5 +24,5 @@ export {
   isNode,
 } from './registry'
 
-export type { TextCtx } from './text'
+export type { TextContext } from './text'
 export { evaluateText, renderText } from './text'

@@ -57,15 +57,15 @@ export type NameHash = Record<string, string>
  * - `Base.hook` at codegen time, where each entry implements a
  *   declared `Task` and the `input` is the task's `take` shape.
  *
- * - The flow render context (`BaseCtx.hook`), where each entry
+ * - The flow render context (`BaseContext.hook`), where each entry
  *   implements a `call` operator and may receive a second
- *   `ctx` argument (locale, scope) — built-ins like `plural`
+ *   `context` argument (locale, scope) — built-ins like `plural`
  *   and `currency` use it.
  *
  * Loose at this layer; call sites narrow to the exact input
  * record type.
  */
-export type HookHash = Record<string, (input: any, ctx?: any) => any>
+export type HookHash = Record<string, (input: any, context?: any) => any>
 
 /**
  * Codegen overrides for the built-in `like` → output mappings.
@@ -159,7 +159,7 @@ export type Test = {
 export type Make = {
   form: 'make'
   save: string
-  make: (bond: any, ctx: RefinementCtx, name: string) => any
+  make: (bond: any, context: RefinementCtx, name: string) => any
 }
 
 /**

@@ -92,7 +92,7 @@ as the second arg.
 ### Adding a custom top-level form
 
 A custom form lives alongside `branch`, `walk`, etc. The handler
-receives the node, the render ctx, and a `walk` callback that
+receives the node, the render context, and a `walk` callback that
 evaluates child nodes in the parent renderer's output type.
 
 ```ts
@@ -108,10 +108,10 @@ const repeatSchema: Form = {
   },
 }
 
-registerForm('repeat', repeatSchema, (node, ctx, walk) => {
+registerForm('repeat', repeatSchema, (node, context, walk) => {
   const r = node as { body: Node; times: Node }
-  const body = String(walk(r.body, ctx))
-  const n = Number(walk(r.times, ctx))
+  const body = String(walk(r.body, context))
+  const n = Number(walk(r.times, context))
   return body.repeat(n)
 })
 
@@ -158,7 +158,7 @@ value evaluated) and `children` for the `nest:` array.
 
 ## Per-render overlays
 
-You can override registries per render via `ctx`:
+You can override registries per render via `context`:
 
 ```ts
 const overlay = new Map<string, CallHandler>()
@@ -207,7 +207,7 @@ export function registerExtensions() {
 ```
 
 Call `registerExtensions()` once during app boot. Per-render
-overlays on `ctx` then layer on top for tests or per-tenant
+overlays on `context` then layer on top for tests or per-tenant
 customization.
 
 ## See also

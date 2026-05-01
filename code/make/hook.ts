@@ -7,7 +7,7 @@
  * default `HookHash` consumed by the flow renderer.
  */
 
-import type { BaseCtx } from './flow/render/registry'
+import type { BaseContext } from './flow/render/registry'
 import { deepEq } from './flow/task'
 
 // ---------------------------------------------------------------------------
@@ -85,21 +85,21 @@ export const max = ({ list }: Record<string, unknown>) =>
 /**
  * Locale-sensitive formatters read locale from the scope chain
  * via `scope.get('locale')`. Pass `flow.scope({ locale: 'en' })`
- * (or whatever) when rendering — no special ctx field.
+ * (or whatever) when rendering — no special context field.
  */
-function readLocale(ctx?: BaseCtx): string | undefined {
-  const v = ctx?.scope.get('locale')
+function readLocale(context?: BaseContext): string | undefined {
+  const v = context?.scope.get('locale')
   return typeof v === 'string' ? v : undefined
 }
 
 export const plural = (
   { value }: Record<string, unknown>,
-  ctx?: BaseCtx,
+  context?: BaseContext,
 ) => {
   if (typeof Intl?.PluralRules === 'undefined') {
     return Number(value) === 1 ? 'one' : 'other'
   }
-  const rules = new Intl.PluralRules(readLocale(ctx) ?? 'en')
+  const rules = new Intl.PluralRules(readLocale(context) ?? 'en')
   return rules.select(Number(value))
 }
 
@@ -108,13 +108,13 @@ export const length = ({ value }: Record<string, unknown>) =>
 
 export const lower = (
   { value }: Record<string, unknown>,
-  ctx?: BaseCtx,
-) => String(value ?? '').toLocaleLowerCase(readLocale(ctx))
+  context?: BaseContext,
+) => String(value ?? '').toLocaleLowerCase(readLocale(context))
 
 export const upper = (
   { value }: Record<string, unknown>,
-  ctx?: BaseCtx,
-) => String(value ?? '').toLocaleUpperCase(readLocale(ctx))
+  context?: BaseContext,
+) => String(value ?? '').toLocaleUpperCase(readLocale(context))
 
 // ---------------------------------------------------------------------------
 // Formatters
@@ -122,37 +122,37 @@ export const upper = (
 
 export const number = (
   { value, options }: Record<string, unknown>,
-  ctx?: BaseCtx,
+  context?: BaseContext,
 ) =>
   new Intl.NumberFormat(
-    readLocale(ctx),
+    readLocale(context),
     options as Intl.NumberFormatOptions,
   ).format(Number(value))
 
 export const currency = (
   { value, code }: Record<string, unknown>,
-  ctx?: BaseCtx,
+  context?: BaseContext,
 ) =>
-  new Intl.NumberFormat(readLocale(ctx), {
+  new Intl.NumberFormat(readLocale(context), {
     style: 'currency',
     currency: String(code),
   }).format(Number(value))
 
 export const percent = (
   { value }: Record<string, unknown>,
-  ctx?: BaseCtx,
+  context?: BaseContext,
 ) =>
-  new Intl.NumberFormat(readLocale(ctx), { style: 'percent' }).format(
+  new Intl.NumberFormat(readLocale(context), { style: 'percent' }).format(
     Number(value),
   )
 
 export const date = (
   { value, options }: Record<string, unknown>,
-  ctx?: BaseCtx,
+  context?: BaseContext,
 ) => {
   const d = value instanceof Date ? value : new Date(String(value))
   return new Intl.DateTimeFormat(
-    readLocale(ctx),
+    readLocale(context),
     options as Intl.DateTimeFormatOptions,
   ).format(d)
 }

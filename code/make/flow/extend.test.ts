@@ -9,7 +9,7 @@
  * extensions.
  *
  * Custom transformations live as `flow.call(name, args)` in
- * the tree and resolve through `ctx.hook[name]`. Args are
+ * the tree and resolve through `context.hook[name]`. Args are
  * pre-evaluated by the walker before the hook runs.
  */
 
@@ -17,7 +17,7 @@ import { describe, it, expect } from 'vitest'
 import { flow, renderText } from './index'
 
 describe('hook (call operators)', () => {
-  it('adds a new call operator via ctx.hook', () => {
+  it('adds a new call operator via context.hook', () => {
     const tree = flow.call('reverse', { value: 'hello' })
     expect(
       renderText(tree, {
@@ -45,7 +45,7 @@ describe('hook (call operators)', () => {
     ).toBe('HI!')
   })
 
-  it('overrides built-ins via ctx.hook', () => {
+  it('overrides built-ins via context.hook', () => {
     const tree = flow.count(flow.list([flow.text('a'), flow.text('b')]))
     expect(
       renderText(tree, {

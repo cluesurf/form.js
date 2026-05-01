@@ -22,10 +22,10 @@
  *
  * The renderer:
  *
- *  - calls `ctx.builder(type, props, ...children)` for `view`
+ *  - calls `context.builder(type, props, ...children)` for `view`
  *    nodes (and for the implicit fragment wrappers around
  *    `weave`, `list`, `walk`, `loop`, `case`)
- *  - reads view components from `ctx.component[name]`
+ *  - reads view components from `context.component[name]`
  *  - falls back to the bare view name as the element type when
  *    no component is registered (e.g. `'div'`)
  *  - threads `key` in via props for list children
@@ -48,7 +48,7 @@ import {
   deepEq,
   getCall,
   isNode,
-  type BaseCtx,
+  type BaseContext,
 } from './registry'
 import type { Scope } from './scope'
 
@@ -71,7 +71,7 @@ export type ElementBuilder<T> = (
  *    builder accepts as a `type` (a component reference,
  *    usually).
  */
-export type ElementCtx<T = unknown, C = unknown> = BaseCtx & {
+export type ElementContext<T = unknown, C = unknown> = BaseContext & {
   builder: ElementBuilder<T>
   fragment?: unknown
   component?: Record<string, C>
@@ -83,16 +83,16 @@ export type ElementCtx<T = unknown, C = unknown> = BaseCtx & {
 
 export function renderElement<T = unknown, C = unknown>(
   node: Node,
-  ctx: ElementCtx<T, C>,
+  context: ElementContext<T, C>,
 ): T | string | null {
-  return walkElement(node, ctx) as T | string | null
+  return walkElement(node, context) as T | string | null
 }
 
 // ---------------------------------------------------------------------------
 // Walker
 // ---------------------------------------------------------------------------
 
-function walkElement(node: Node, ctx: ElementCtx): unknown {
+function walkElement(node: Node, context: ElementContext): unknown {
   switch (node.form) {
     // ----- literals -----
     case 'text':
@@ -105,58 +105,58 @@ function walkElement(node: Node, ctx: ElementCtx): unknown {
       return String(node.value)
     case 'list':
       return wrapFragment(
-        ctx,
-        node.list.map((n, i) => keyed(walkElement(n, ctx), i)),
+        context,
+        node.list.map((n, i) => keyed(walkElement(n, context), i)),
       )
     case 'weave':
       return wrapFragment(
-        ctx,
-        node.flow.map((n, i) => keyed(walkElement(n, ctx), i)),
+        context,
+        node.flow.map((n, i) => keyed(walkElement(n, context), i)),
       )
 
     // ----- reads -----
     case 'reference':
-      return toElementChild(ctx.scope.get(node.name))
+      return toElementChild(context.scope.get(node.name))
     case 'path':
       return toElementChild(
         evaluatePath(
           node,
-          ctx,
-          walkValue as (n: Node, c: BaseCtx) => unknown,
+          context,
+          walkValue as (n: Node, c: BaseContext) => unknown,
         ),
       )
 
     // ----- calls -----
     case 'call':
-      return toElementChild(evaluateCall(node, ctx))
+      return toElementChild(evaluateCall(node, context))
 
     // ----- control flow -----
     case 'branch': {
-      const t = walkValue(node.test, ctx)
-      if (t) return walkElement(node.then, ctx)
-      return node.fall === undefined ? null : walkElement(node.fall, ctx)
+      const t = walkValue(node.test, context)
+      if (t) return walkElement(node.then, context)
+      return node.fall === undefined ? null : walkElement(node.fall, context)
     }
     case 'switch': {
-      const v = walkValue(node.value, ctx)
+      const v = walkValue(node.value, context)
       for (const arm of node.cases) {
-        if (deepEq(walkValue(arm.when, ctx), v)) {
-          return walkElement(arm.then, ctx)
+        if (deepEq(walkValue(arm.when, context), v)) {
+          return walkElement(arm.then, context)
         }
       }
-      return node.fall === undefined ? null : walkElement(node.fall, ctx)
+      return node.fall === undefined ? null : walkElement(node.fall, context)
     }
     case 'match': {
       for (const branch of node.branches) {
-        if (walkValue(branch.test, ctx)) {
-          return walkElement(branch.then, ctx)
+        if (walkValue(branch.test, context)) {
+          return walkElement(branch.then, context)
         }
       }
-      return node.fall === undefined ? null : walkElement(node.fall, ctx)
+      return node.fall === undefined ? null : walkElement(node.fall, context)
     }
     case 'case':
-      return walkCase(node, ctx)
+      return walkCase(node, context)
     case 'pick': {
-      const values = walkValue(node.values, ctx)
+      const values = walkValue(node.values, context)
       if (Array.isArray(values)) {
         for (const v of values) {
           if (v != null) return toElementChild(v)
@@ -165,7 +165,7 @@ function walkElement(node: Node, ctx: ElementCtx): unknown {
       return null
     }
     case 'walk': {
-      const list = walkValue(node.list, ctx) as
+      const list = walkValue(node.list, context) as
         | unknown[]
         | null
         | undefined
@@ -177,19 +177,19 @@ function walkElement(node: Node, ctx: ElementCtx): unknown {
         const frame: Record<string, unknown> = {}
         frame[itemName] = list[i]
         frame[indexName] = i
-        const inner: ElementCtx = {
-          ...ctx,
-          scope: ctx.scope.push(frame),
+        const inner: ElementContext = {
+          ...context,
+          scope: context.scope.push(frame),
         }
         out.push(keyed(walkElement(node.hook, inner), i))
       }
-      return wrapFragment(ctx, out)
+      return wrapFragment(context, out)
     }
     case 'loop': {
-      const start = Number(walkValue(node.start, ctx))
-      const end = Number(walkValue(node.end, ctx))
+      const start = Number(walkValue(node.start, context))
+      const end = Number(walkValue(node.end, context))
       const step =
-        node.step === undefined ? 1 : Number(walkValue(node.step, ctx))
+        node.step === undefined ? 1 : Number(walkValue(node.step, context))
       const itemName = node.item ?? 'i'
       const indexName = node.index ?? 'index'
       const out: unknown[] = []
@@ -198,28 +198,28 @@ function walkElement(node: Node, ctx: ElementCtx): unknown {
         const frame: Record<string, unknown> = {}
         frame[itemName] = n
         frame[indexName] = idx
-        const inner: ElementCtx = {
-          ...ctx,
-          scope: ctx.scope.push(frame),
+        const inner: ElementContext = {
+          ...context,
+          scope: context.scope.push(frame),
         }
         out.push(keyed(walkElement(node.hook, inner), idx))
         idx += 1
       }
-      return wrapFragment(ctx, out)
+      return wrapFragment(context, out)
     }
     case 'attempt': {
       try {
-        return walkElement(node.flow, ctx)
+        return walkElement(node.flow, context)
       } catch {
         return node.catch === undefined
           ? null
-          : walkElement(node.catch, ctx)
+          : walkElement(node.catch, context)
       }
     }
 
     // ----- views -----
     case 'view':
-      return walkView(node, ctx)
+      return walkView(node, context)
   }
 
   throw new Error(
@@ -233,7 +233,7 @@ function walkElement(node: Node, ctx: ElementCtx): unknown {
 // Value walker — used inside paths, predicates, branch tests
 // ---------------------------------------------------------------------------
 
-function walkValue(node: Node, ctx: ElementCtx): unknown {
+function walkValue(node: Node, context: ElementContext): unknown {
   switch (node.form) {
     case 'text':
       return node.text
@@ -244,23 +244,23 @@ function walkValue(node: Node, ctx: ElementCtx): unknown {
     case 'date':
       return node.value
     case 'list':
-      return node.list.map(n => walkValue(n, ctx))
+      return node.list.map(n => walkValue(n, context))
     case 'weave':
-      return node.flow.map(n => walkValue(n, ctx)).join('')
+      return node.flow.map(n => walkValue(n, context)).join('')
     case 'reference':
-      return ctx.scope.get(node.name)
+      return context.scope.get(node.name)
     case 'path':
       return evaluatePath(
         node,
-        ctx,
-        walkValue as (n: Node, c: BaseCtx) => unknown,
+        context,
+        walkValue as (n: Node, c: BaseContext) => unknown,
       )
     case 'call':
-      return evaluateCall(node, ctx)
+      return evaluateCall(node, context)
     default:
       // For control-flow / views in a value position, fall back
       // to the element walker.
-      return walkElement(node, ctx)
+      return walkElement(node, context)
   }
 }
 
@@ -268,8 +268,8 @@ function walkValue(node: Node, ctx: ElementCtx): unknown {
 // View dispatch
 // ---------------------------------------------------------------------------
 
-function walkView(node: ViewNode, ctx: ElementCtx): unknown {
-  const type = ctx.component?.[node.name] ?? node.name
+function walkView(node: ViewNode, context: ElementContext): unknown {
+  const type = context.component?.[node.name] ?? node.name
 
   // Resolve flat props.
   const props: Record<string, unknown> = {}
@@ -285,28 +285,28 @@ function walkView(node: ViewNode, ctx: ElementCtx): unknown {
       continue
     }
     const v = (node as Record<string, unknown>)[k]
-    props[k] = isNode(v) ? walkValue(v, ctx) : v
+    props[k] = isNode(v) ? walkValue(v, context) : v
   }
 
   // Resolve nest children.
   const children = (node.nest ?? []).map((n, i) =>
-    keyed(walkElement(n, ctx), i),
+    keyed(walkElement(n, context), i),
   )
 
-  return ctx.builder(type, props, ...children)
+  return context.builder(type, props, ...children)
 }
 
 // ---------------------------------------------------------------------------
 // Case
 // ---------------------------------------------------------------------------
 
-function walkCase(node: CaseNode, ctx: ElementCtx): unknown {
-  const subject = walkValue(node.test, ctx)
+function walkCase(node: CaseNode, context: ElementContext): unknown {
+  const subject = walkValue(node.test, context)
   for (const arm of node.case) {
-    if (matchArm(arm, subject, ctx)) {
+    if (matchArm(arm, subject, context)) {
       return wrapFragment(
-        ctx,
-        arm.flow.map((n, i) => keyed(walkElement(n, ctx), i)),
+        context,
+        arm.flow.map((n, i) => keyed(walkElement(n, context), i)),
       )
     }
   }
@@ -316,13 +316,13 @@ function walkCase(node: CaseNode, ctx: ElementCtx): unknown {
 function matchArm(
   arm: CaseArm,
   subject: unknown,
-  ctx: ElementCtx,
+  context: ElementContext,
 ): boolean {
   switch (arm.form) {
     case 'case-value':
       return deepEq((arm as CaseValueArm).value, subject)
     case 'case-test':
-      return Boolean(evaluateCallWithSubject(arm.test, subject, ctx))
+      return Boolean(evaluateCallWithSubject(arm.test, subject, context))
     case 'case-default':
       return true
   }
@@ -332,35 +332,35 @@ function matchArm(
 // Call helpers
 // ---------------------------------------------------------------------------
 
-function evaluateCall(node: CallNode, ctx: ElementCtx): unknown {
-  const handler = getCall(ctx, node.name)
+function evaluateCall(node: CallNode, context: ElementContext): unknown {
+  const handler = getCall(context, node.name)
   if (!handler) {
     throw new Error(`flow.call: unknown operator '${node.name}'`)
   }
   const args = collectCallArgs(
     node,
-    ctx,
-    walkValue as (n: Node, c: BaseCtx) => unknown,
+    context,
+    walkValue as (n: Node, c: BaseContext) => unknown,
   )
-  return handler(args, ctx)
+  return handler(args, context)
 }
 
 function evaluateCallWithSubject(
   node: CallNode,
   subject: unknown,
-  ctx: ElementCtx,
+  context: ElementContext,
 ): unknown {
-  const handler = getCall(ctx, node.name)
+  const handler = getCall(context, node.name)
   if (!handler) {
     throw new Error(`flow.call: unknown operator '${node.name}'`)
   }
   const args = collectCallArgs(
     node,
-    ctx,
-    walkValue as (n: Node, c: BaseCtx) => unknown,
+    context,
+    walkValue as (n: Node, c: BaseContext) => unknown,
   )
   if (args.subject === undefined) args.subject = subject
-  return handler(args, ctx)
+  return handler(args, context)
 }
 
 // ---------------------------------------------------------------------------
@@ -368,14 +368,14 @@ function evaluateCallWithSubject(
 // ---------------------------------------------------------------------------
 
 /**
- * Wrap a children array as a single result. If `ctx.fragment`
+ * Wrap a children array as a single result. If `context.fragment`
  * is provided, build a real fragment element. Otherwise return
  * the array as-is — most vdom libraries accept arrays directly
  * as a child slot.
  */
-function wrapFragment(ctx: ElementCtx, children: unknown[]): unknown {
-  if (ctx.fragment !== undefined) {
-    return ctx.builder(ctx.fragment, null, ...children)
+function wrapFragment(context: ElementContext, children: unknown[]): unknown {
+  if (context.fragment !== undefined) {
+    return context.builder(context.fragment, null, ...children)
   }
   return children
 }

@@ -131,7 +131,7 @@ describe('renderElement', () => {
 
   it('works with a fragment-less builder by returning child arrays', () => {
     // Custom builder that always wraps in a `[type, props, children]`
-    // tuple — verifies fragment fallback when ctx.fragment is omitted.
+    // tuple — verifies fragment fallback when context.fragment is omitted.
     type Tup = [unknown, Record<string, unknown> | null, unknown[]]
     const tup = (
       type: unknown,

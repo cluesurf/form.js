@@ -72,11 +72,11 @@ export { RESERVED_NODE_KEYS } from './types'
 export type { Promotable } from './build'
 
 export type {
-  BaseCtx,
+  BaseContext,
   CallEntry,
   CallHandler,
   Scope,
-  TextCtx,
+  TextContext,
 } from './render/index'
 
 export {
@@ -89,7 +89,7 @@ export {
   renderText,
 } from './render/index'
 
-export type { ElementBuilder, ElementCtx } from './render/element'
+export type { ElementBuilder, ElementContext } from './render/element'
 export { renderElement } from './render/element'
 
 export const flow = {
