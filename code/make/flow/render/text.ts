@@ -22,7 +22,6 @@ import {
   collectCallArgs,
   deepEq,
   getCall,
-  getForm,
   type BaseCtx,
 } from './registry'
 import { type Scope } from './scope'
@@ -42,11 +41,6 @@ export function renderText(node: Node, ctx: TextCtx): string {
  * walker). Most consumers want `renderText` instead.
  */
 export function evaluateText(node: Node, ctx: TextCtx): unknown {
-  // Custom forms registered via `registerForm` win over the
-  // built-in dispatch.
-  const customForm = getForm(ctx, node.form)
-  if (customForm) return customForm(node, ctx, evaluateText)
-
   switch (node.form) {
     // ----- literals -----
     case 'text':

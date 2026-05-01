@@ -16,14 +16,11 @@ export type {
   BaseCtx,
   CallEntry,
   CallHandler,
-  FormEntry,
-  FormHandler,
 } from './registry'
 export {
   DEFAULT_HOOK,
   deepEq,
   getCall,
-  getForm,
   isNode,
 } from './registry'
 

@@ -23,8 +23,6 @@ export type {
   ControlFlow,
   DateNode,
   FieldSeg,
-  FormEntry,
-  FormHandler,
   IndexSeg,
   IntegerNode,
   WeaveNode,

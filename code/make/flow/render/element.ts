@@ -47,7 +47,6 @@ import {
   collectCallArgs,
   deepEq,
   getCall,
-  getForm,
   isNode,
   type BaseCtx,
 } from './registry'
@@ -94,15 +93,6 @@ export function renderElement<T = unknown, C = unknown>(
 // ---------------------------------------------------------------------------
 
 function walkElement(node: Node, ctx: ElementCtx): unknown {
-  const customForm = getForm(ctx, node.form)
-  if (customForm) {
-    return customForm(
-      node,
-      ctx,
-      walkElement as (n: Node, c: BaseCtx) => unknown,
-    )
-  }
-
   switch (node.form) {
     // ----- literals -----
     case 'text':
@@ -347,7 +337,11 @@ function evaluateCall(node: CallNode, ctx: ElementCtx): unknown {
   if (!handler) {
     throw new Error(`flow.call: unknown operator '${node.name}'`)
   }
-  const args = collectCallArgs(node, ctx, walkValue)
+  const args = collectCallArgs(
+    node,
+    ctx,
+    walkValue as (n: Node, c: BaseCtx) => unknown,
+  )
   return handler(args, ctx)
 }
 
@@ -360,7 +354,11 @@ function evaluateCallWithSubject(
   if (!handler) {
     throw new Error(`flow.call: unknown operator '${node.name}'`)
   }
-  const args = collectCallArgs(node, ctx, walkValue)
+  const args = collectCallArgs(
+    node,
+    ctx,
+    walkValue as (n: Node, c: BaseCtx) => unknown,
+  )
   if (args.subject === undefined) args.subject = subject
   return handler(args, ctx)
 }

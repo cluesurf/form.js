@@ -1,24 +1,32 @@
 /**
- * Operator + form lookup for the renderers.
+ * Operator lookup for the renderers.
  *
  * The flow library has no module-level mutable registry.
- * Operators (`call` handlers) and custom form handlers are
- * passed through the render context's `hook` and `formHook`
- * maps — the same `HookHash` shape as `Base.hook` at codegen
- * time.
+ * Operators (`call` handlers) are passed through the render
+ * context's `hook` map — the same `HookHash` shape as
+ * `Base.hook` at codegen time.
  *
  * Built-in operators live in `code/make/hook.ts` as named
  * exports; `DEFAULT_HOOK` below merges them and remaps the few
- * names that ship as kebab-case in flow trees (`is-null`,
- * `in`) but cannot appear as JS identifiers.
+ * names that ship as kebab-case in flow trees (`is-null`, `in`)
+ * but cannot be JS identifiers.
  *
- * Migration from the old `registerCall` / `registerForm`
- * mutating-global API: pass per-call instead —
+ * Custom transformations register as call operators —
  *
  *   renderText(tree, {
  *     scope: makeScope(),
- *     hook: { reverse: ({ value }) => String(value).split('').reverse().join('') },
+ *     hook: {
+ *       reverse: ({ value }) =>
+ *         String(value).split('').reverse().join(''),
+ *     },
  *   })
+ *
+ * In the tree:
+ *
+ *   flow.call('reverse', { value: flow.reference('name') })
+ *
+ * Args are pre-evaluated by the walker — the hook receives
+ * resolved values, never raw flow nodes.
  */
 
 import type { Form, HookHash } from '@/form'
@@ -38,11 +46,6 @@ export type BaseCtx = {
    * additions / overrides.
    */
   hook?: HookHash
-  /**
-   * Custom top-level form handlers. Use to add new node types
-   * without modifying the core walker. Keyed by `node.form`.
-   */
-  formHook?: Record<string, FormHandler<unknown>>
 }
 
 // ---------------------------------------------------------------------------
@@ -106,37 +109,6 @@ export function isNode(v: unknown): v is Node {
     !Array.isArray(v) &&
     'form' in (v as Record<string, unknown>)
   )
-}
-
-// ---------------------------------------------------------------------------
-// Forms
-// ---------------------------------------------------------------------------
-
-/**
- * A form handler receives the node, the current context, and a
- * `walk` callback that evaluates a child node in the same
- * output type the parent walker is producing. The walker uses
- * the handler instead of its built-in dispatch.
- *
- * Generic on the renderer's output type — the same handler
- * shape powers text, React, and any future renderer.
- */
-export type FormHandler<T> = (
-  node: Node,
-  ctx: BaseCtx,
-  walk: (n: Node, ctx: BaseCtx) => T,
-) => T
-
-export type FormEntry = {
-  schema?: Form
-  handler: FormHandler<unknown>
-}
-
-export function getForm(
-  ctx: BaseCtx,
-  name: string,
-): FormHandler<unknown> | undefined {
-  return ctx.formHook?.[name]
 }
 
 // ---------------------------------------------------------------------------

@@ -265,7 +265,7 @@ describe('control flow', () => {
   it('walk', () => {
     const tree = flow.walk(
       flow.reference('stanzas'),
-      flow.view('paragraph', undefined, [
+      flow.view('paragraph', [
         flow.path('item', 'translation'),
       ]),
     )
@@ -326,7 +326,7 @@ describe('views', () => {
     const tree = flow.view(
       'section',
       { title: 'Phonology' },
-      [flow.view('paragraph', undefined, ['Body text.'])],
+      [flow.view('paragraph', ['Body text.'])],
     )
     expect(tree.nest).toEqual([
       {

@@ -15,13 +15,17 @@
  *
  *   flow.renderText(tree, {
  *     scope: flow.scope({ count: 5 }),
- *     hook: { reverse: ({ value }) => String(value).split('').reverse().join('') },
- *     formHook: { upper: (node, ctx, walk) => ... },
+ *     hook: {
+ *       reverse: ({ value }) =>
+ *         String(value).split('').reverse().join(''),
+ *     },
  *   })
  *
  * `hook` is the same `HookHash` used by `Base.hook` at codegen
- * time — a single name → function table covers built-in
- * operators, custom call operators, and task implementations.
+ * time — one name → function table covers built-in operators,
+ * custom call operators, and task implementations. Custom
+ * transformations show up in the tree as `flow.call('reverse',
+ * { value: ... })` and resolve through the same dispatch path.
  */
 
 import * as builders from './build'
@@ -71,8 +75,6 @@ export type {
   BaseCtx,
   CallEntry,
   CallHandler,
-  FormEntry,
-  FormHandler,
   Scope,
   TextCtx,
 } from './render/index'
@@ -82,7 +84,6 @@ export {
   deepEq,
   evaluateText,
   getCall,
-  getForm,
   isNode,
   makeScope,
   renderText,

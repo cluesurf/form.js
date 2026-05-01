@@ -57,6 +57,50 @@ describe('reference and path rendering', () => {
     expect(result).toEqual([2, 3, 4])
   })
 
+  it('slice with negative bounds counts from the end', () => {
+    const scope = makeScope({ items: [1, 2, 3, 4, 5] })
+    const result = flow.evaluate(
+      flow.path('items', flow.slice(-3, -1)),
+      { scope },
+    )
+    expect(result).toEqual([3, 4])
+  })
+
+  it('slice with only a negative tail bound', () => {
+    const scope = makeScope({ items: [1, 2, 3, 4, 5] })
+    const result = flow.evaluate(
+      flow.path('items', flow.slice(undefined, -2)),
+      { scope },
+    )
+    expect(result).toEqual([1, 2, 3])
+  })
+
+  it('safe index short-circuits when intermediate is null', () => {
+    const scope = makeScope({ user: null })
+    const tree = flow.path(
+      flow.variable('user'),
+      flow.field('items', { safe: true }),
+      flow.idx(0, { safe: true }),
+    )
+    expect(flow.evaluate(tree, { scope })).toBeNull()
+  })
+
+  it('safe index short-circuits on out-of-bounds lookup', () => {
+    const scope = makeScope({ items: [] })
+    const tree = flow.path(
+      flow.variable('items'),
+      flow.idx(0, { safe: true }),
+      flow.field('name', { safe: true }),
+    )
+    expect(flow.evaluate(tree, { scope })).toBeNull()
+  })
+
+  it('non-safe index out-of-bounds returns undefined (no chain protection)', () => {
+    const scope = makeScope({ items: [] })
+    const tree = flow.path(flow.variable('items'), flow.idx(0))
+    expect(flow.evaluate(tree, { scope })).toBeUndefined()
+  })
+
   it('optional chaining returns null when intermediate is null', () => {
     const scope = makeScope({ user: null })
     const tree = flow.path(

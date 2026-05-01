@@ -234,16 +234,24 @@ flow.renderText(tree, {
 
 `hook` is the same `HookHash` shape as `Base.hook` at codegen time —
 operators, task implementations, and ad-hoc extensions share one table.
+Args are pre-evaluated by the walker, so the hook function sees
+resolved values, not flow nodes.
 
-`formHook` adds custom top-level node forms. `viewHook` (React renderer
-only) maps `view` node names to React components.
+For React (or Preact, or any vdom), use `renderElement` and pass the
+builder primitives:
 
 ```ts
-import { renderReact } from '@cluesurf/form/make/flow/render/react'
+import { renderElement } from '@cluesurf/form'
+import { createElement, Fragment } from 'react'
 import Callout from './my/components/callout'
 
-renderReact(tree, {
+renderElement(tree, {
   scope: flow.scope(),
-  viewHook: { callout: Callout },
+  builder: createElement,
+  fragment: Fragment,
+  component: { callout: Callout },
 })
 ```
+
+`component` maps `view` node names to whatever the builder accepts
+as a `type` (a React component, Preact component, etc.).

@@ -1,13 +1,16 @@
 /**
- * Tests for the per-context extension system: `hook` (custom
- * call operators / task implementations) and `formHook`
- * (custom top-level forms).
+ * Tests for the per-context extension system.
  *
  * The flow runtime has no module-level mutable registry —
  * every extension is passed in via the render context. The
  * `hook` map is the same `HookHash` used by `Base.hook` at
  * codegen time, so a single name → function table covers
- * operators, task implementations, and ad-hoc extensions.
+ * built-in operators, task implementations, and ad-hoc
+ * extensions.
+ *
+ * Custom transformations live as `flow.call(name, args)` in
+ * the tree and resolve through `ctx.hook[name]`. Args are
+ * pre-evaluated by the walker before the hook runs.
  */
 
 import { describe, it, expect } from 'vitest'
@@ -27,11 +30,16 @@ describe('hook (call operators)', () => {
     ).toBe('olleh')
   })
 
-  it('hook-only registration with no schema works', () => {
-    const tree = flow.call('shout', { value: 'hi' })
+  it('hook receives args pre-evaluated from the tree', () => {
+    // The `value` arg references a scope key. The walker
+    // resolves it before passing into the hook — the hook sees
+    // the resolved string, not the reference node.
+    const tree = flow.call('shout', {
+      value: flow.reference('msg'),
+    })
     expect(
       renderText(tree, {
-        scope: flow.scope(),
+        scope: flow.scope({ msg: 'hi' }),
         hook: { shout: ({ value }) => `${String(value).toUpperCase()}!` },
       }),
     ).toBe('HI!')
@@ -46,47 +54,22 @@ describe('hook (call operators)', () => {
       }),
     ).toBe('999')
   })
-})
 
-describe('formHook (custom forms)', () => {
-  it('adds a new top-level form via ctx.formHook', () => {
-    type RepeatNode = {
-      form: 'repeat'
-      body: { form: 'text'; text: string }
-      times: { form: 'natural_number'; value: number }
-    }
-
-    const tree = {
-      form: 'repeat' as const,
-      body: { form: 'text' as const, text: 'ab' },
-      times: { form: 'natural_number' as const, value: 3 },
-    }
-
-    expect(
-      renderText(tree as never, {
-        scope: flow.scope(),
-        formHook: {
-          repeat: (node, ctx, walk) => {
-            const r = node as unknown as RepeatNode
-            const text = String(walk(r.body, ctx))
-            const n = Number(walk(r.times, ctx))
-            return text.repeat(n)
-          },
-        },
-      }),
-    ).toBe('ababab')
-  })
-
-  it('overlays a built-in form', () => {
-    const tree = flow.reference('something')
+  it('hook with a record arg whose entries are flow nodes', () => {
+    // `upper` is what the user originally proposed as a
+    // form-level extension; it works fine as a `call` with a
+    // pre-evaluated `text` arg.
+    const tree = flow.call('upper', {
+      text: flow.reference('greeting'),
+    })
     expect(
       renderText(tree, {
-        scope: flow.scope({ something: 'real' }),
-        formHook: {
-          reference: node =>
-            `[overlay:${(node as { name: string }).name}]`,
+        scope: flow.scope({ greeting: 'good morning' }),
+        hook: {
+          upper: ({ text }: { text: string }) =>
+            text.toLocaleUpperCase(),
         },
       }),
-    ).toBe('[overlay:something]')
+    ).toBe('GOOD MORNING')
   })
 })
