@@ -710,47 +710,64 @@ export const test_case: Form = {
 }
 
 /**
- * `Task`: a function definition. `take` declares the input
- * record (same shape as `form.link`); `like` names the output
- * form. Codegen emits a TS input type and a zod parser for
- * `take`.
+ * `Task`: a function definition. `take` references a separately
+ * declared `Form` schema (the input shape); `like` names the
+ * output form. The referenced Form's codegen handles the input
+ * TS type + zod parser.
  */
 
-export const greet_user: Task = {
-  form: 'task',
+export const greet_user_input: Form = {
+  form: 'form',
   save: '~/test/hold/task',
-  take: {
+  link: {
     name: { like: 'string' },
     age: { like: 'natural_number', need: false },
     polite: { like: 'boolean', need: false, fall: true },
   },
+}
+
+export const greet_user: Task = {
+  form: 'task',
+  save: '~/test/hold/task',
+  take: 'greet_user_input',
   like: 'string',
+}
+
+export const sum_numbers_input: Form = {
+  form: 'form',
+  save: '~/test/hold/task',
+  link: {
+    values: { list: true, like: 'integer' },
+  },
 }
 
 export const sum_numbers: Task = {
   form: 'task',
   save: '~/test/hold/task',
-  take: {
-    values: { list: true, like: 'integer' },
-  },
+  take: 'sum_numbers_input',
   like: 'integer',
 }
 
 /**
- * `Flow`: a renderable tree with declared params. The same
- * shape feeds both i18n (`renderText`) and component trees
- * (`renderReact`) — the renderer choice picks the output
- * type, the schema stays generic.
+ * `Flow`: a renderable tree with declared params. `take`
+ * references a separately declared `Form` for the input shape;
+ * `tree` is the array of nodes the renderer walks.
  */
 
-export const message_count_template: Flow = {
-  form: 'flow',
+export const message_count_input: Form = {
+  form: 'form',
   save: '~/test/hold/flow',
   link: {
     count: { like: 'natural_number' },
     name: { like: 'string' },
   },
-  flow: [
+}
+
+export const message_count_template: Flow = {
+  form: 'flow',
+  save: '~/test/hold/flow',
+  take: 'message_count_input',
+  tree: [
     flow.text('You have '),
     flow.reference('count'),
     flow.text(' '),

@@ -11,79 +11,95 @@ import type { Flow, Form, Hash, List, Task } from '@/form'
 import { flow as flowNs } from './flow/index'
 
 describe('makeTree — task + flow + cast', () => {
-  it('emits a TS input record + zod parser for a Task', async () => {
-    const greet_user: Task = {
-      form: 'task',
+  it('Task references a Form for input — input codegen comes from the Form', async () => {
+    const greet_user_input: Form = {
+      form: 'form',
       save: '~/hold/task',
-      take: {
+      link: {
         name: { like: 'string' },
         age: { like: 'natural_number', need: false },
         polite: { like: 'boolean', need: false, fall: true },
       },
+    }
+
+    const greet_user: Task = {
+      form: 'task',
+      save: '~/hold/task',
+      take: 'greet_user_input',
       like: 'string',
     }
 
     const tree = await makeTree({
       name: {},
-      mesh: { greet_user },
-      link: { greet_user },
+      mesh: { greet_user_input, greet_user },
+      link: { greet_user_input, greet_user },
       testLink: '~/test',
       codeLink: '.',
     })
 
     const formOut = tree.form['~/hold/task/index']!
-    expect(formOut).toContain('export type GreetUser')
+    expect(formOut).toContain('export type GreetUserInput')
     expect(formOut).toContain('name: string')
     expect(formOut).toContain('age?: number')
     expect(formOut).toContain('polite?: boolean')
 
     const takeOut = tree.take['~/hold/task/take']!
-    expect(takeOut).toContain('export const GreetUserParser')
+    expect(takeOut).toContain('export const GreetUserInputParser')
     expect(takeOut).toContain('name: z.string()')
     expect(takeOut).toContain('z.boolean()')
   })
 
-  it('emits a TS input record + zod parser for a Flow', async () => {
-    const message: Flow = {
-      form: 'flow',
+  it('Flow references a Form for input — input codegen comes from the Form', async () => {
+    const message_input: Form = {
+      form: 'form',
       save: '~/hold/flow',
       link: {
         count: { like: 'natural_number' },
       },
-      flow: [flowNs.text('You have '), flowNs.reference('count')],
+    }
+
+    const message: Flow = {
+      form: 'flow',
+      save: '~/hold/flow',
+      take: 'message_input',
+      tree: [flowNs.text('You have '), flowNs.reference('count')],
     }
 
     const tree = await makeTree({
       name: {},
-      mesh: { message },
-      link: { message },
+      mesh: { message_input, message },
+      link: { message_input, message },
       testLink: '~/test',
       codeLink: '.',
     })
 
     const formOut = tree.form['~/hold/flow/index']!
-    expect(formOut).toContain('export type Message')
+    expect(formOut).toContain('export type MessageInput')
     expect(formOut).toContain('count: number')
 
     const takeOut = tree.take['~/hold/flow/take']!
-    expect(takeOut).toContain('export const MessageParser')
+    expect(takeOut).toContain('export const MessageInputParser')
     expect(takeOut).toContain('count: z.number()')
   })
 
-  it('emits the Flow node array as a Node[] const in base.ts', async () => {
+  it('emits the Flow tree as a Node[] const in base.ts', async () => {
+    const message_input: Form = {
+      form: 'form',
+      save: '~/hold/flow',
+      link: { count: { like: 'natural_number' } },
+    }
+
     const message: Flow = {
       form: 'flow',
       save: '~/hold/flow',
-      link: {
-        count: { like: 'natural_number' },
-      },
-      flow: [flowNs.text('You have '), flowNs.reference('count')],
+      take: 'message_input',
+      tree: [flowNs.text('You have '), flowNs.reference('count')],
     }
 
     const tree = await makeTree({
       name: {},
-      mesh: { message },
-      link: { message },
+      mesh: { message_input, message },
+      link: { message_input, message },
       testLink: '~/test',
       codeLink: '.',
     })
@@ -92,7 +108,7 @@ describe('makeTree — task + flow + cast', () => {
     expect(baseOut).toContain(
       `import type { Node } from '@cluesurf/form'`,
     )
-    expect(baseOut).toContain('export const MESSAGE_FLOW: Node[]')
+    expect(baseOut).toContain('export const MESSAGE_TREE: Node[]')
     expect(baseOut).toContain(`form: 'text'`)
     expect(baseOut).toContain(`text: 'You have '`)
     expect(baseOut).toContain(`form: 'reference'`)

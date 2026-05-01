@@ -87,7 +87,7 @@ export function make_flow({
   hold: Hold
 }) {
   const list: string[] = []
-  const TYPE_NAME = `${snakeCase(name).toUpperCase()}_FLOW`
+  const TYPE_NAME = `${snakeCase(name).toUpperCase()}_TREE`
 
   hold.save[TYPE_NAME] ??= { file }
   hold.load[file] ??= {}
@@ -99,7 +99,7 @@ export function make_flow({
   list.push(``)
   list.push(
     `export const ${TYPE_NAME}: Node[] = ` +
-      JSON.stringify(flow.flow, null, 2),
+      JSON.stringify(flow.tree, null, 2),
   )
 
   return list

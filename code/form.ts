@@ -106,7 +106,14 @@ export type FormLink = {
   back?: string
   base?: string
   fall?: any
-  bind?: FormBond | Record<string, FormBond> | FormBond[]
+  /**
+   * Either a literal default-value binding (`FormBond` /
+   * record / array) used in standard make.ts schemas, OR a
+   * `boolean` flag for the guide-system view-tree extension —
+   * when `true`, the prop accepts a path expression or call
+   * node in addition to a literal.
+   */
+  bind?: FormBond | Record<string, FormBond> | FormBond[] | boolean
   fill?: boolean
   hold?: boolean
   like?: string
@@ -132,6 +139,36 @@ export type FormLink = {
   test?: string
   trim?: boolean
   load?: boolean
+
+  // ---- View-tree authoring extensions ----
+  // Optional metadata consumed by editors and runtime walkers
+  // that build typed view trees on top of `Form`. Codegen for
+  // schemas that don't use them ignores these fields.
+
+  /**
+   * Slot type label. The editor's binding picker reads this to
+   * filter compatible variables in scope. The format is a
+   * colon-separated stack — leaf at the bottom, wrappers on
+   * top. Examples: `'string'`, `'list:record:image'`,
+   * `'option:value:number'`. Authors define their own slot
+   * vocabulary on top of the leaf primitives.
+   */
+  slot?: string
+  /**
+   * `true` when the prop accepts child view-tree nodes (e.g.
+   * tabbed sections, layout containers).
+   */
+  view?: boolean
+  /**
+   * Editor input hint. Defaults are derived from `like`; set
+   * here only to override the picker's chosen widget.
+   */
+  pick?: string
+  /**
+   * Free-form keyword list for component-library / catalog
+   * search.
+   */
+  tags?: string[]
 }
 
 export type Hash = {
@@ -163,17 +200,20 @@ export type Make = {
 }
 
 /**
- * A `Task` describes a function. `take` declares the input
- * parameters (same shape as `form.link`). `like` names the
- * output form (a string referring to another schema entry).
+ * A `Task` describes a function.
  *
- * Codegen emits the input record TS type and zod parser for
- * `take`. Implementations are wired through `Base.hook`.
+ *  - `take` is the **name** of a separately-defined `Form`
+ *    schema describing the input parameters. The referenced
+ *    Form's codegen emits the TS input type and zod parser;
+ *    Task itself emits no input codegen.
+ *  - `like` is the output type or the name of another schema.
+ *
+ * Implementations are wired through `Base.hook`.
  */
 export type Task = {
   form: 'task'
   save: string
-  take: LinkMesh
+  take: string
   like: string
   note?: string
 }
@@ -182,23 +222,20 @@ export type Task = {
  * A `Flow` describes a renderable tree with declared inputs.
  * It's the unified shape behind both i18n templates (rendered
  * to a string via `renderText`) and dynamic component trees
- * (rendered to React via `renderReact`).
+ * (rendered to elements via `renderElement`).
  *
- *  - `link` declares the call params (same shape as
- *    `form.link`).
- *  - `flow` is the array of nodes the renderer walks. Same
- *    `Node` union for both renderers — only the renderer's
- *    output type changes.
- *
- * Codegen emits the input record TS type and zod parser for
- * `link`. The `flow` payload is data evaluated at render time
- * by `@cluesurf/form/make/flow`.
+ *  - `take` is the **name** of a separately-defined `Form`
+ *    schema describing the call parameters. Same model as
+ *    `Task.take`.
+ *  - `tree` is the array of nodes the renderer walks. The
+ *    same `Node` union feeds every renderer; only the
+ *    renderer's output type changes.
  */
 export type Flow = {
   form: 'flow'
   save: string
-  link: LinkMesh
-  flow: FlowNode[]
+  take: string
+  tree: FlowNode[]
   note?: string
 }
 

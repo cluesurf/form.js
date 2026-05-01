@@ -7,10 +7,7 @@ import {
   List,
   Base,
   FormBaseCase,
-  FormBaseLink,
   FormLikeCase,
-  Task,
-  Flow,
 } from '@/form'
 import { detectEnumStyleNesting } from './shared'
 
@@ -93,18 +90,10 @@ export default function make(base: Base, hold: Hold, need = true) {
         )
         break
       case 'task':
-        make_task({ task: site, base, name, hold, file, need }).forEach(
-          line => {
-            list.push(line)
-          },
-        )
-        break
       case 'flow':
-        make_flow({ flow: site, base, name, hold, file, need }).forEach(
-          line => {
-            list.push(line)
-          },
-        )
+        // Input codegen for Task / Flow comes from their
+        // referenced Form (via `take: '<form_name>'`). Nothing
+        // to emit here.
         break
     }
   }
@@ -251,52 +240,6 @@ ${keyList.map(key => `  | '${key}'`).join('\n')}`)
   }
 
   return list
-}
-
-export function make_task({
-  name,
-  task,
-  base,
-  hold,
-  file,
-  need = false,
-}: {
-  name: string
-  task: Task
-  base: Base
-  hold: Hold
-  file: string
-  need?: boolean
-}) {
-  const synthetic: FormBaseLink = {
-    form: 'form',
-    save: task.save,
-    link: task.take,
-  }
-  return make_form({ name, form: synthetic, base, hold, file, need })
-}
-
-export function make_flow({
-  name,
-  flow,
-  base,
-  hold,
-  file,
-  need = false,
-}: {
-  name: string
-  flow: Flow
-  base: Base
-  hold: Hold
-  file: string
-  need?: boolean
-}) {
-  const synthetic: FormBaseLink = {
-    form: 'form',
-    save: flow.save,
-    link: flow.link,
-  }
-  return make_form({ name, form: synthetic, base, hold, file, need })
 }
 
 export function make_list({

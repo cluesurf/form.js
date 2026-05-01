@@ -90,36 +90,53 @@ Codegen emits a string-literal union and a `z.enum`.
 
 ### `Task` — function definition
 
+`Task` references a separately-declared `Form` for its input shape.
+The Form's codegen handles the TS type + zod parser; the Task entry
+itself is just a registry record (input ref + output type).
+
 ```ts
-export const greet_user: Task = {
-  form: 'task',
+export const greet_user_input: Form = {
+  form: 'form',
   save: '~/hold/task',
-  take: {
+  link: {
     name: { like: 'string' },
     polite: { like: 'boolean', need: false, fall: true },
   },
+}
+
+export const greet_user: Task = {
+  form: 'task',
+  save: '~/hold/task',
+  take: 'greet_user_input',
   like: 'string',
 }
 ```
 
-`take` has the same shape as `form.link`. Codegen emits a TS input
-record (`GreetUser`) and a zod parser (`GreetUserParser`).
-Implementations are wired through `Base.hook` (see below).
+Codegen for `greet_user_input` emits `GreetUserInput` (TS) and
+`GreetUserInputParser` (zod). Implementations are wired through
+`Base.hook` (see below).
 
 ### `Flow` — renderable tree with declared inputs
 
-The same shape feeds both i18n templates (`renderText`) and component
-trees (`renderReact`).
+Same input pattern as `Task` — `take` is a Form name. `tree` is the
+array of nodes the renderer walks. The same shape feeds i18n
+templates (`renderText`) and component trees (`renderElement`).
 
 ```ts
-export const message_count: Flow = {
-  form: 'flow',
+export const message_count_input: Form = {
+  form: 'form',
   save: '~/hold/flow',
   link: {
     count: { like: 'natural_number' },
     name: { like: 'string' },
   },
-  flow: [
+}
+
+export const message_count: Flow = {
+  form: 'flow',
+  save: '~/hold/flow',
+  take: 'message_count_input',
+  tree: [
     flow.text('You have '),
     flow.reference('count'),
     flow.text(' '),
@@ -130,9 +147,9 @@ export const message_count: Flow = {
 }
 ```
 
-Codegen emits the input record TS type and zod parser for `link`. The
-`flow` array is data — pass it to `flow.renderText` or
-`flow.renderReact` at render time.
+Codegen for `message_count_input` emits the input TS type and zod
+parser. Codegen for `message_count` emits a `MESSAGE_COUNT_TREE:
+Node[]` const into `base.ts`, importable for runtime evaluation.
 
 ## Codegen
 

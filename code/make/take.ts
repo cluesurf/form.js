@@ -3,13 +3,10 @@ import snakeCase from 'lodash/snakeCase'
 import {
   Base,
   Form,
-  FormBaseLink,
   FormLike,
   LinkMesh,
   Hash,
   List,
-  Task,
-  Flow,
 } from '@/form'
 import { detectEnumStyleNesting } from './shared'
 import { Hold } from './form'
@@ -97,75 +94,14 @@ export default function make(base: Base, hold: Hold) {
         })
         break
       case 'task':
-        list.push(``)
-        make_task({
-          task: site,
-          base,
-          name,
-          file,
-          hold,
-        }).forEach(line => {
-          list.push(line)
-        })
-        break
       case 'flow':
-        list.push(``)
-        make_flow({
-          flow: site,
-          base,
-          name,
-          file,
-          hold,
-        }).forEach(line => {
-          list.push(line)
-        })
+        // Input codegen for Task / Flow comes from their
+        // referenced Form. Nothing to emit here.
         break
     }
   }
 
   return hash
-}
-
-export function make_task({
-  name,
-  task,
-  base,
-  file,
-  hold,
-}: {
-  name: string
-  task: Task
-  base: Base
-  file: string
-  hold: Hold
-}) {
-  const synthetic: FormBaseLink = {
-    form: 'form',
-    save: task.save,
-    link: task.take,
-  }
-  return make_form({ name, form: synthetic, base, file, hold })
-}
-
-export function make_flow({
-  name,
-  flow,
-  base,
-  file,
-  hold,
-}: {
-  name: string
-  flow: Flow
-  base: Base
-  file: string
-  hold: Hold
-}) {
-  const synthetic: FormBaseLink = {
-    form: 'form',
-    save: flow.save,
-    link: flow.link,
-  }
-  return make_form({ name, form: synthetic, base, file, hold })
 }
 
 export function make_hash({
