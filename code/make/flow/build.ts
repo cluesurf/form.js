@@ -439,17 +439,31 @@ export function attempt(
 // Views
 // ---------------------------------------------------------------------------
 
+export function view(name: string): ViewNode
+export function view(name: string, nest: Promotable[]): ViewNode
 export function view(
   name: string,
-  props?: Record<string, Promotable>,
+  props: Record<string, Promotable>,
+  nest?: Promotable[],
+): ViewNode
+export function view(
+  name: string,
+  propsOrNest?: Record<string, Promotable> | Promotable[],
   nest?: Promotable[],
 ): ViewNode {
   const node: ViewNode = { form: 'view', name }
-  if (props) {
-    for (const [k, v] of Object.entries(props)) {
+
+  // Two-arg shorthand: `view('paragraph', ['Inventory.'])` —
+  // skip the empty-props slot entirely when the second arg is
+  // an array.
+  if (Array.isArray(propsOrNest)) {
+    nest = propsOrNest
+  } else if (propsOrNest) {
+    for (const [k, v] of Object.entries(propsOrNest)) {
       ;(node as Record<string, unknown>)[k] = promote(v)
     }
   }
+
   if (nest && nest.length > 0) {
     node.nest = nest.map(promote)
   }

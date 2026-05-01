@@ -88,7 +88,8 @@ export {
   renderText,
 } from './render/index'
 
-export type { ReactCtx } from './render/react'
+export type { ElementBuilder, ElementCtx } from './render/element'
+export { renderElement } from './render/element'
 
 export const flow = {
   // promotion

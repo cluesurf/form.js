@@ -1,6 +1,10 @@
 export * from './form'
 export * from './tool'
-export { flow, RESERVED_NODE_KEYS } from './make/flow/index'
+export {
+  flow,
+  RESERVED_NODE_KEYS,
+  renderElement,
+} from './make/flow/index'
 export type {
   AttemptNode,
   BaseCtx,
@@ -9,6 +13,8 @@ export type {
   CallEntry,
   CallHandler,
   CallNode,
+  ElementBuilder,
+  ElementCtx,
   CaseArm,
   CaseDefaultArm,
   CaseNode,
@@ -34,7 +40,6 @@ export type {
   PathSeg,
   PickNode,
   Promotable,
-  ReactCtx,
   Reference,
   Scope,
   SliceSeg,

@@ -240,6 +240,7 @@ only) maps `view` node names to React components.
 
 ```ts
 import { renderReact } from '@cluesurf/form/make/flow/render/react'
+import Callout from './my/components/callout'
 
 renderReact(tree, {
   scope: flow.scope(),
