@@ -5,10 +5,64 @@
  * implementations in a project's `task.ts`. Pulled together
  * via `import * as hook from './hook'` and merged into the
  * default `HookHash` consumed by the flow renderer.
+ *
+ * Locale-aware operators (plural, number, date, etc.) are
+ * backed by `@formatjs/intl`, which wraps the native
+ * `Intl.*` constructors with cross-engine quirk smoothing
+ * and per-locale instance caching. Constructing
+ * `Intl.NumberFormat` etc. is expensive (~100 µs) and a
+ * page can render hundreds of values; the cache keeps
+ * subsequent calls cheap.
  */
 
+import {
+  createIntl,
+  createIntlCache,
+  type FormatDateOptions,
+  type FormatListOptions,
+  type FormatNumberOptions,
+  type FormatPluralOptions,
+  type FormatRelativeTimeOptions,
+  type IntlShape,
+} from '@formatjs/intl'
 import type { BaseContext } from './flow/render/registry'
 import { deepEq } from './flow/task'
+
+// ---------------------------------------------------------------------------
+// Intl shape cache (formatjs)
+// ---------------------------------------------------------------------------
+
+const intlCache = createIntlCache()
+const intlByLocale = new Map<string, IntlShape>()
+
+function getIntl(locale: string): IntlShape {
+  let intl = intlByLocale.get(locale)
+  if (!intl) {
+    intl = createIntl({ locale, messages: {} }, intlCache)
+    intlByLocale.set(locale, intl)
+  }
+  return intl
+}
+
+// ---------------------------------------------------------------------------
+// Locale read
+// ---------------------------------------------------------------------------
+
+const DEFAULT_LOCALE = 'en'
+
+/**
+ * Read the active locale from the render context's scope.
+ *
+ * The convention: `flow.scope({ locale: 'fr', ... })` —
+ * `locale` is a reserved scope key. The site-text runtime
+ * sets it via `flow.scope(input, getActiveScope(locale))`
+ * before each render. Falls back to `'en'` outside any
+ * locale context.
+ */
+function readLocale(context?: BaseContext): string {
+  const v = context?.scope.get('locale')
+  return typeof v === 'string' ? v : DEFAULT_LOCALE
+}
 
 // ---------------------------------------------------------------------------
 // Predicates
@@ -82,36 +136,29 @@ export const max = ({ list }: Record<string, unknown>) =>
 // Derives
 // ---------------------------------------------------------------------------
 
-/**
- * Locale-sensitive formatters read locale from the scope chain
- * via `scope.get('locale')`. Pass `flow.scope({ locale: 'en' })`
- * (or whatever) when rendering — no special context field.
- */
-function readLocale(context?: BaseContext): string | undefined {
-  const v = context?.scope.get('locale')
-  return typeof v === 'string' ? v : undefined
-}
+type PluralArgs = {
+  value: unknown
+  options?: FormatPluralOptions
+} & Record<string, unknown>
 
 export const plural = (
-  { value }: Record<string, unknown>,
+  { value, options }: PluralArgs,
   context?: BaseContext,
-) => {
-  if (typeof Intl?.PluralRules === 'undefined') {
-    return Number(value) === 1 ? 'one' : 'other'
-  }
-  const rules = new Intl.PluralRules(readLocale(context) ?? 'en')
-  return rules.select(Number(value))
-}
+) => getIntl(readLocale(context)).formatPlural(Number(value), options)
 
 export const length = ({ value }: Record<string, unknown>) =>
   value == null ? 0 : String(value).length
 
-export const lower = (
+// ---------------------------------------------------------------------------
+// String case (locale-sensitive — native String methods)
+// ---------------------------------------------------------------------------
+
+export const lowercase = (
   { value }: Record<string, unknown>,
   context?: BaseContext,
 ) => String(value ?? '').toLocaleLowerCase(readLocale(context))
 
-export const upper = (
+export const uppercase = (
   { value }: Record<string, unknown>,
   context?: BaseContext,
 ) => String(value ?? '').toLocaleUpperCase(readLocale(context))
@@ -119,42 +166,97 @@ export const upper = (
 // ---------------------------------------------------------------------------
 // Formatters
 // ---------------------------------------------------------------------------
+//
+// Each formatter accepts `{ value, options }` OR hoisted
+// option keys (`{ value, year, month, ... }`). The
+// rest-spread captures the latter shape when no explicit
+// `options` is passed.
+
+type NumberArgs = {
+  value: unknown
+  options?: FormatNumberOptions
+} & Record<string, unknown>
 
 export const number = (
-  { value, options }: Record<string, unknown>,
+  { value, options, ...rest }: NumberArgs,
   context?: BaseContext,
-) =>
-  new Intl.NumberFormat(
-    readLocale(context),
-    options as Intl.NumberFormatOptions,
-  ).format(Number(value))
+) => {
+  const opts = (options ?? rest) as FormatNumberOptions
+  return getIntl(readLocale(context)).formatNumber(Number(value), opts)
+}
 
 export const currency = (
-  { value, code }: Record<string, unknown>,
+  { value, code }: { value: unknown; code: unknown },
   context?: BaseContext,
 ) =>
-  new Intl.NumberFormat(readLocale(context), {
+  getIntl(readLocale(context)).formatNumber(Number(value), {
     style: 'currency',
     currency: String(code),
-  }).format(Number(value))
+  })
 
 export const percent = (
-  { value }: Record<string, unknown>,
+  { value }: { value: unknown },
   context?: BaseContext,
 ) =>
-  new Intl.NumberFormat(readLocale(context), { style: 'percent' }).format(
-    Number(value),
-  )
+  getIntl(readLocale(context)).formatNumber(Number(value), {
+    style: 'percent',
+  })
+
+type DateArgs = {
+  value: unknown
+  options?: FormatDateOptions
+} & Record<string, unknown>
 
 export const date = (
-  { value, options }: Record<string, unknown>,
+  { value, options, ...rest }: DateArgs,
   context?: BaseContext,
 ) => {
   const d = value instanceof Date ? value : new Date(String(value))
-  return new Intl.DateTimeFormat(
-    readLocale(context),
-    options as Intl.DateTimeFormatOptions,
-  ).format(d)
+  const opts = (options ?? rest) as FormatDateOptions
+  return getIntl(readLocale(context)).formatDate(d, opts)
+}
+
+export const time = (
+  { value, options, ...rest }: DateArgs,
+  context?: BaseContext,
+) => {
+  const d = value instanceof Date ? value : new Date(String(value))
+  const opts = (options ?? rest) as FormatDateOptions
+  return getIntl(readLocale(context)).formatTime(d, opts)
+}
+
+type RelativeArgs = {
+  value: unknown
+  unit: unknown
+  options?: FormatRelativeTimeOptions
+} & Record<string, unknown>
+
+export const relative = (
+  { value, unit, options, ...rest }: RelativeArgs,
+  context?: BaseContext,
+) => {
+  const opts = (options ?? rest) as FormatRelativeTimeOptions
+  return getIntl(readLocale(context)).formatRelativeTime(
+    Number(value),
+    unit as Intl.RelativeTimeFormatUnit,
+    opts,
+  )
+}
+
+type ListArgs = {
+  values: unknown
+  options?: FormatListOptions
+} & Record<string, unknown>
+
+export const list = (
+  { values, options, ...rest }: ListArgs,
+  context?: BaseContext,
+) => {
+  const opts = (options ?? rest) as FormatListOptions
+  return getIntl(readLocale(context)).formatList(
+    (Array.isArray(values) ? values : []) as string[],
+    opts,
+  )
 }
 
 // ---------------------------------------------------------------------------

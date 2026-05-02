@@ -273,29 +273,42 @@ export const length = (value: Promotable) => call('length', { value })
 
 // ----- formatters (note: these overlap by name with literals; helpers
 // below are explicit) -----
+//
+// `options?` accepts either a flow node (rare; for runtime-
+// computed options) or a plain options object — the walker
+// passes it through to the hook unchanged via `collectCallArgs`.
 
-export const fmtNumber = (value: Promotable, options?: Promotable) =>
-  options === undefined
-    ? call('number', { value })
-    : call('number', { value, options })
+export type FormatOptions =
+  | Promotable
+  | Record<string, unknown>
+
+function withOptions(name: string, value: Promotable, options?: FormatOptions): CallNode {
+  if (options === undefined) return call(name, { value })
+  return call(name, { value, options: options as Promotable })
+}
+
+export const formatNumber = (value: Promotable, options?: FormatOptions) =>
+  withOptions('number', value, options)
 
 export const currency = (value: Promotable, code: string) =>
   call('currency', { value, code })
 
 export const percent = (value: Promotable) => call('percent', { value })
 
-export const fmtDate = (value: Promotable, options?: Promotable) =>
-  options === undefined
-    ? call('date', { value })
-    : call('date', { value, options })
+export const formatDate = (value: Promotable, options?: FormatOptions) =>
+  withOptions('date', value, options)
 
-export const fmtTime = (value: Promotable, options?: Promotable) =>
-  options === undefined
-    ? call('time', { value })
-    : call('time', { value, options })
+export const formatTime = (value: Promotable, options?: FormatOptions) =>
+  withOptions('time', value, options)
 
 export const relative = (value: Promotable, unit: string) =>
   call('relative', { value, unit })
+
+// Back-compat aliases for the old `fmt*` names. Remove
+// after a deprecation cycle.
+export const fmtNumber = formatNumber
+export const fmtDate = formatDate
+export const fmtTime = formatTime
 
 // ---------------------------------------------------------------------------
 // Control flow

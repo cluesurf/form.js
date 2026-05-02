@@ -135,12 +135,16 @@ export const flow = {
   max: builders.max,
   plural: builders.plural,
   length: builders.length,
-  fmtNumber: builders.fmtNumber,
+  formatNumber: builders.formatNumber,
   currency: builders.currency,
   percent: builders.percent,
+  formatDate: builders.formatDate,
+  formatTime: builders.formatTime,
+  relative: builders.relative,
+  // back-compat aliases
+  fmtNumber: builders.fmtNumber,
   fmtDate: builders.fmtDate,
   fmtTime: builders.fmtTime,
-  relative: builders.relative,
 
   // control flow
   branch: builders.branch,

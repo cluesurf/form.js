@@ -2,10 +2,11 @@
   "compilerOptions": {
     "module": "ESNext",
     "target": "ES2015",
-    "lib": ["es2020", "dom"],
+    "lib": ["es2022", "dom"],
     "outDir": "host",
     "rootDir": "code",
     "sourceMap": true,
+    "inlineSources": true,
     "declaration": true,
     "moduleResolution": "bundler",
     "strictNullChecks": true,

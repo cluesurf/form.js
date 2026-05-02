@@ -1,6 +1,6 @@
 {
   "name": "@cluesurf/form",
-  "version": "0.9.0",
+  "version": "0.9.8",
   "license": "MIT",
   "main": "./host/index.js",
   "type": "module",
@@ -9,7 +9,7 @@
     "./make": "./host/make/index.js"
   },
   "scripts": {
-    "make": "rm -rf host && mkdir -p host && pnpm exec tsc --project tsconfig.json --pretty --noEmitOnError false && pnpm exec tsc-alias --project tsconfig.json && cp package.json host",
+    "make": "rm -rf host && mkdir -p host && pnpm exec tsc --project tsconfig.json --pretty --noEmitOnError false && rm -f tsconfig.tsbuildinfo && pnpm exec tsc-alias --project tsconfig.json --resolve-full-paths && cp package.json host",
     "scan": "rm -rf host && concurrently --kill-others \"tsc -w\" \"tsc-alias -w\"",
     "test:make": "npx tsx test/make.ts",
     "test": "npx tsx --no-warnings=ExperimentalWarning test/index.ts",
@@ -28,6 +28,7 @@
     "vitest": "^4.1.5"
   },
   "dependencies": {
+    "@formatjs/intl": "3.1.6",
     "lodash": "4.17.23",
     "p-limit": "7.3.0",
     "prettier": "3.8.1",
